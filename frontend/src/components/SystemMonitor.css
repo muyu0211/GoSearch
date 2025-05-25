@@ -1,0 +1,128 @@
+/* frontend/src/components/SystemMonitor.css */
+.system-monitor-popup {
+    position: absolute;
+    top: calc(100% + 5px); /* 在 SearchBar 下方，留一点间隙 */
+    right: 0; /* 对齐到 SearchBar 的右侧 */
+    width: 300px; /* 或你期望的宽度 */
+    max-width: 90vw;
+    background-color: var(--header-bg-color); /* 使用头部背景色或卡片背景色 */
+    color: var(--app-text-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px var(--shadow-primary, rgba(0, 0, 0, 0.1));
+    padding: 1rem;
+    z-index: 100; /* 确保在其他元素之上 */
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    animation: fadeInMonitor 0.3s forwards ease-out;
+    /* transition: opacity 0.3s ease, transform 0.3s ease; */ /* 用于 JS 控制的动画 */
+}
+
+/* 也可以用一个类来控制显示/隐藏的动画 */
+.system-monitor-popup.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+@keyframes fadeInMonitor {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+.system-monitor-popup h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1em;
+    color: var(--header-text-color, var(--app-text-color));
+    border-bottom: 1px solid var(--input-border-color);
+    padding-bottom: 0.5rem;
+}
+
+.close-monitor-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary, #888);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem;
+}
+.close-monitor-btn:hover {
+    color: var(--app-text-color);
+}
+
+.sys-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr; /* 标签和值 */
+    gap: 0.5rem 1rem; /* 行间距 列间距 */
+    font-size: 0.9em;
+}
+
+.info-item {
+    display: contents; /* 让子元素直接参与 grid 布局 */
+}
+.info-item .label {
+    font-weight: 500;
+    color: var(--text-secondary, #555);
+    white-space: nowrap;
+}
+.info-item .value {
+    text-align: right;
+    color: var(--app-text-color);
+}
+
+.info-item.progress-item .label {
+    grid-column: 1 / 2; /* 标签占第一列 */
+    align-self: center;
+}
+.info-item.progress-item .progress-bar-container {
+    grid-column: 2 / 3; /* 进度条容器占第二列 */
+    background-color: var(--bg-tertiary, #e9ecef);
+    border-radius: 4px;
+    height: 12px; /* 进度条高度 */
+    overflow: hidden;
+    margin: auto 0; /* 垂直居中 */
+    width: calc(100% - 50px); /* 减去百分比文本的宽度 */
+    display: inline-block; /* 与百分比文本同行 */
+}
+.info-item.progress-item .percent-value {
+    grid-column: 2 / 3; /* 百分比文本也占第二列，但会因 text-align:right 和 inline-block 而在进度条之后 */
+    width: 45px; /* 给百分比文本固定宽度 */
+    text-align: right;
+    display: inline-block;
+    margin-left: 5px;
+    align-self: center;
+}
+
+
+.progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out; /* 进度条变化动画 */
+    text-align: right;
+    color: white;
+    font-size: 0.8em;
+    line-height: 12px; /* 与高度一致 */
+    padding-right: 4px; /* 百分比数字的内边距 */
+}
+
+.cpu-bar {
+    background-color: var(--button-bg-color); /* 使用主题强调色 */
+}
+.mem-bar {
+    background-color: var(--settings-accent-color); /* 或者另一种强调色 */
+}
+/* 可以为不同百分比设置不同颜色 */
+.cpu-bar[style*="width: 8"], /* 80-89% */
+.cpu-bar[style*="width: 9"] { /* 90-99% */
+    /* background-color: orange; */
+}
+.cpu-bar[style*="width: 100%"] {
+    /* background-color: red; */
+}

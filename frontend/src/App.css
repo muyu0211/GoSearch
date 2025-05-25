@@ -1,0 +1,392 @@
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /* background-color 和 color 已由 body 继承 */
+}
+
+.app-header {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--header-bg-color);    /* 使用你的变量 */
+    color: var(--header-text-color);          /* 使用你的变量 */
+    box-shadow: var(--header-box-shadow);       /* 使用你的变量 */
+    /* border-bottom: 1px solid var(--border-primary);  如果你有 --border-primary */
+    z-index: 10;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header-logo {
+    width: 30px;
+    height: 30px;
+    /* 如果是 SVG，考虑 fill: currentColor; */
+}
+
+.logo-area {
+    display: flex;
+    align-items: center; /* 确保 logo 和 title 垂直居中 */
+    flex-shrink: 0;
+}
+
+.app-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    /* color 已从 .app-header 继承，或直接使用 var(--header-text-color) */
+    margin-left: 0.5rem; /* 在 logo 和 title 之间加点间距 */
+}
+
+.search-area {
+    flex-grow: 1;
+    margin: 0 1.5rem;
+    max-width: 700px;
+}
+
+.settings-action-area {
+    display: flex; /* 用于排列主题切换按钮和设置按钮 */
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn,
+.system-monitor-toggle-btn{ /* 新增的主题切换按钮样式 */
+    background: none;
+    border: none;
+    font-size: 1.5rem; /* 图标大小 */
+    color: var(--header-text-color, var(--app-text-color)); /* 继承头部文字颜色 */
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 0.5rem; /* 和设置按钮的间距 */
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.theme-toggle-btn:hover,
+.system-monitor-toggle-btn:hover{
+    background-color: var(--bg-tertiary, #e0e0e0); /* 使用一个通用的悬停背景色变量 */
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--header-text-color, var(--app-text-color)); /* 继承头部文字颜色 */
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.settings-btn:hover {
+    background-color: var(--bg-tertiary, #e0e0e0); /* 使用一个通用的悬停背景色变量 */
+}
+
+.settings-action-area {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative; /* 让 SystemMonitor 的 wrapper 可以相对于它定位 */
+}
+
+/* 通用头部操作按钮样式 */
+.header-action-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--header-text-color, var(--app-text-color));
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: 0.25rem; /* 按钮之间的间距 */
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    line-height: 1;
+}
+.header-action-btn:hover {
+    background-color: var(--bg-tertiary, #e0e0e0);
+}
+.header-action-btn:first-child {
+    margin-left: 0; /* 第一个按钮不需要左边距 */
+}
+
+/* 用于 SystemMonitor 弹窗的相对定位 wrapper */
+.system-monitor-wrapper {
+    position: absolute; /* 相对于 app-header 或 settings-action-area */
+    top: 100%; /* 在头部下方 */
+    right: 1.5rem; /* 与 settings-action-area 的右边距对齐 */
+    z-index: 100; /* 确保在最上层 */
+    /* 这个 wrapper 本身不需要大小，SystemMonitor 组件自己有大小 */
+}
+
+/* 如果 search-area 在非 home 页面需要占位以保持布局 */
+.search-area-placeholder {
+    flex-grow: 1;
+    margin: 0 1rem;
+    max-width: 700px; /* 与 .search-area 保持一致 */
+    min-width: 200px; /* 与 .search-area 保持一致 */
+}
+
+.app-main-content {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.app-main-content.initial-mode {
+    align-items: center;
+    justify-content: center;
+}
+
+.initial-view {
+    width: 600px;
+    /*height: 300px;*/
+    text-align: center;
+    padding: 2.5rem;
+    background-color: var(--results-bg-color); /* 可以复用 results 或 card 的背景 */
+    color: var(--app-text-color);
+    border-radius: 8px;
+    box-shadow: var(--header-box-shadow); /* 可以复用 header 的阴影或定义新的 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.initial-logo {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1rem; /* 调整间距 */
+}
+
+.initial-view h2 {
+    font-size: 1.8em;
+    /* color 已继承 */
+    margin-bottom: 1rem;
+}
+
+.initial-prompt {
+    font-size: 1em;
+    color: var(--text-secondary, #555555); /* 使用通用次要文本颜色 */
+    line-height: 1.6;
+}
+
+.initial-settings-link {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background-color: var(--button-bg-color); /* 使用按钮变量 */
+    color: var(--button-text-color);       /* 使用按钮变量 */
+    text-decoration: none;
+    border-radius: var(--border-radius-middle);
+    transition: background-color 0.2s ease;
+}
+
+.initial-settings-link:hover {
+    background-color: var(--button-hover-bg-color); /* 使用按钮变量 */
+}
+
+.indexing-status {
+    color: var(--button-bg-color); /* 使用按钮/强调色 */
+    font-weight: 500;
+    margin-top: 1rem; /* 给状态一些间距 */
+}
+
+/* 确保 ResultsList, PreviewPane, StatusBar, Modal 等组件的 CSS 也使用这些变量 */
+/* 例如 ResultsList.css */
+.results-list {
+    flex: 2; /* 或者其他你期望的比例 */
+    overflow-y: auto;
+    background-color: var(--results-bg-color);
+    border-radius: 6px;
+    /* box-shadow: var(--header-box-shadow); */ /* 可选 */
+    padding: 0.5rem; /* 给列表一些内边距 */
+}
+.result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-primary, var(--input-border-color)); /* 使用边框变量 */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.result-item:last-child {
+    border-bottom: none;
+}
+.result-item:hover {
+    background-color: var(--results-item-hover-bg-color);
+}
+.result-item.selected {
+    background-color: var(--results-item-selected-bg-color);
+    /* color: var(--app-text-color); */ /* 通常选中项文字颜色不需要特别改变，除非背景色太深 */
+    /* border-left: 3px solid var(--button-bg-color); */ /* 可选的选中指示 */
+}
+.file-icon { margin-right: 0.5rem; color: var(--text-secondary, #555); }
+.file-name { font-weight: bold; color: var(--app-text-color); }
+.file-path-preview { font-size: 0.8em; color: var(--text-secondary, #777); margin-top: 0.2rem; }
+
+
+/* PreviewPane.css */
+.preview-pane {
+    flex: 1; /* 或者其他你期望的比例 */
+    overflow-y: auto;
+    background-color: var(--preview-bg-color);
+    padding: 1rem;
+    border-radius: 6px;
+    /* box-shadow: var(--header-box-shadow); */ /* 可选 */
+}
+.preview-filename {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+    word-break: break-all;
+    color: var(--app-text-color);
+}
+.preview-text-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 0.9em;
+    background-color: var(--input-bg-color); /* 可以用输入框背景或更浅的背景 */
+    color: var(--app-text-color);
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--input-border-color);
+    max-height: calc(100vh - 200px); /* 示例：限制最大高度 */
+    overflow-y: auto;
+}
+.preview-image {
+    max-width: 100%;
+    max-height: calc(100vh - 150px); /* 示例：限制最大高度 */
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+
+/* StatusBar.css */
+.status-bar {
+    padding: 0.5rem 1rem;
+    background-color: var(--statusbar-bg-color);
+    color: var(--statusbar-text-color);
+    font-size: 0.8em;
+    text-align: right;
+    border-top: 1px solid var(--border-primary, var(--input-border-color));
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.status-separator { margin: 0 0.5rem; opacity: 0.6; }
+
+
+/* SettingsModal.css (使用你定义的 settings-page 变量) */
+.modal-overlay {
+    /* ... (保持不变) ... */
+}
+.modal-content {
+    background-color: var(--settings-bg-color);
+    color: var(--settings-text-color);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--shadow-primary);
+    width: 90%;
+    max-width: 500px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--settings-border-color);
+    padding-bottom: 1rem;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--settings-header-color);
+}
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--settings-text-secondary-color);
+}
+.modal-error {
+    background-color: var(--bg-disabled); /* 使用一个通用的错误背景色变量 */
+    color: var(--text-accent); /* 或者专门的错误文字颜色 */
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9em;
+}
+.modal-section {
+    margin-bottom: 1.5rem;
+}
+.modal-section h3 {
+    font-size: 1.1em;
+    margin-bottom: 0.75rem;
+    color: var(--settings-subheader-color);
+    /* border-bottom: 1px solid var(--settings-border-color); */
+    /* padding-bottom: 0.3rem; */
+}
+.directory-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--settings-border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color); /* 列表背景可以像输入框 */
+}
+.directory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--settings-border-color);
+    color: var(--settings-text-color);
+}
+.directory-item:last-child {
+    border-bottom: none;
+}
+.directory-item span {
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 0.5rem;
+}
+.directory-item button {
+    background-color: var(--settings-button-bg-color);
+    color: var(--settings-button-text-color);
+    border: 1px solid var(--settings-border-color); /* 给按钮一个边框 */
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8em;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.directory-item button:hover {
+    background-color: var(--settings-button-hover-bg-color);
+}
+.directory-item button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.add-directory-btn {
+    background-color: var(--settings-accent-color);
+    color: var(--button-text-color); /* 通常强调色按钮文字是白色 */
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease;
+}
+.add-directory-btn:hover:not(:disabled) {
+    background-color: var(--button-hover-bg-color); /* 可以复用通用按钮悬停或定义 settings-accent-hover */
+}
+.add-directory-btn:disabled {
+    background-color: var(--bg-disabled, #c0c0c0);
+    opacity: 0.7;
+    cursor: not-allowed;
+}

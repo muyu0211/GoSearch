@@ -1,0 +1,199 @@
+/* frontend/src/components/SettingsPage.css */
+.settings-page-container {
+    padding: 2rem;
+    width: 60%;
+    margin: 0 auto; /* 居中 */
+    background-color: var(--settings-bg-color); /* 使用 CSS 变量实现主题切换 */
+    color: var(--settings-text-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    height: calc(95% - 1.5rem); /* 减去 app-main-content 的 padding */
+    overflow-y: auto;
+}
+
+.settings-title {
+    font-size: 2em;
+    margin-bottom: 2rem;
+    color: var(--settings-header-color);
+    border-bottom: 2px solid var(--settings-accent-color);
+    padding-bottom: 0.5rem;
+}
+
+.settings-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background-color: var(--settings-section-bg-color);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.settings-section h2 {
+    font-size: 1.4em;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--settings-subheader-color);
+}
+
+.settings-section p {
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+    font-size: 0.9em;
+}
+
+.settings-error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9em;
+}
+
+/* Indexed Directories List */
+.directory-list-settings {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--settings-border-color);
+    border-radius: 4px;
+}
+
+.directory-item-settings {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--settings-border-color);
+    font-size: 0.9em;
+}
+.directory-item-settings:last-child {
+    border-bottom: none;
+}
+.dir-path {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1rem;
+    color: var(--settings-text-secondary-color);
+}
+.remove-dir-btn {
+    background: none;
+    border: none;
+    color: #e53935; /* Red color for remove */
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0.2rem;
+}
+.remove-dir-btn:hover {
+    color: #c62828;
+}
+.remove-dir-btn:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.add-dir-btn-settings {
+    background-color: var(--settings-accent-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s;
+}
+.add-dir-btn-settings:hover:not(:disabled) {
+    opacity: 0.9;
+}
+.add-dir-btn-settings:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.no-dirs-message {
+    color: var(--settings-text-secondary-color);
+    /*font-style: italic;*/
+}
+
+.language-options{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Language and Theme Options */
+.language-options button,
+.theme-options button {
+    padding: 0.6rem 1rem;
+    min-height: 40px;
+    margin-right: 0.75rem;
+    border: 1px solid var(--settings-border-color);
+    background-color: var(--settings-button-bg-color);
+    color: var(--settings-button-text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.language-options button.active,
+.theme-options button.active {
+    background-color: var(--settings-accent-color);
+    color: white;
+    border-color: var(--settings-accent-color);
+    font-weight: bold;
+}
+
+.language-options button:hover:not(.active),
+.theme-options button:hover:not(.active) {
+    border-color: var(--settings-accent-color);
+    background-color: var(--settings-button-hover-bg-color);
+}
+
+.dir-path-display {
+    display: flex;
+    background-color: var(--input-bg-color); /* 使用输入框背景色或类似的 */
+    text-align: center;
+    align-items: center;
+    color: var(--settings-text-secondary-color);
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--settings-border-color);
+    border-radius: var(--border-radius-middle);
+    font-size: 1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*min-height: 2.2em; !* 给一点高度 *!*/
+    /*line-height: 1.5; !* 确保单行文本垂直居中 *!*/
+}
+
+.change-dir-btn { /* 与 add-dir-btn-settings 样式类似 */
+    background-color: var(--settings-accent-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s;
+}
+.change-dir-btn:hover:not(:disabled) {
+    opacity: 0.9;
+}
+.change-dir-btn:disabled {
+    background-color: var(--bg-disabled, #ccc);
+    color: var(--text-disabled, #888);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.settings-note {
+    font-size: 12px;
+    color: var(--settings-text-secondary-color);
+    margin-top: 0.75rem;
+    line-height: 1.5;
+    background-color: var(--settings-section-bg-color); /* 可以给备注一个略微不同的背景 */
+    padding: 0.5rem;
+    border-left: 3px solid var(--settings-accent-color); /* 左边框强调 */
+    /*border-radius: 0 4px 4px 0;*/
+}

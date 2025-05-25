@@ -1,0 +1,104 @@
+/* frontend/src/components/SearchBar.css */
+.search-bar-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+}
+
+.search-input-field {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem; /* 右边留出清除按钮空间 */
+    font-size: 1rem;
+    background-color: var(--input-bg-color);      /* 使用你的变量 */
+    color: var(--input-text-color, var(--app-text-color)); /* 使用你的变量, --input-text-color 优先，否则用 app-text-color */
+    border: 1px solid var(--input-border-color); /* 使用你的变量 */
+    border-radius: var(--border-radius-large) 0 0 var(--border-radius-large);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+
+.search-input-field:focus {
+    outline: none;
+    border-color: var(--input-focus-border-color); /* 使用你的变量 */
+    /*box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); !* 暂时保留这个，或者也用变量 *!*/
+}
+
+.clear-input-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary, #888); /* 使用你的变量或通用次要文本颜色 */
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s ease-in-out;
+}
+
+.clear-input-btn:hover {
+    color: var(--app-text-color); /* 使用你的变量 */
+}
+
+.search-submit-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: var(--button-bg-color);    /* 使用你的变量 */
+    color: var(--button-text-color);       /* 使用你的变量 */
+    border: 1px solid var(--button-bg-color);  /* 使用你的变量 */
+    border-radius: 0 var(--border-radius-large) var(--border-radius-large) 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px; /* 可以根据需要调整 */
+}
+
+.search-submit-btn:hover:not(:disabled) {
+    background-color: var(--button-hover-bg-color); /* 使用你的变量 */
+    border-color: var(--button-hover-bg-color);   /* 使用你的变量 */
+}
+
+.search-submit-btn:disabled {
+    background-color: var(--bg-disabled, #c0c0c0); /* 使用你的变量或通用禁用背景 */
+    border-color: var(--bg-disabled, #c0c0c0);   /* 使用你的变量或通用禁用背景 */
+    color: var(--text-disabled, #888888);        /* 使用你的变量或通用禁用文字 */
+    cursor: not-allowed;
+}
+
+/* Spinner 样式可以保持不变，因为它使用的是内联的 rgba 和 #fff，
+   或者你也可以为 spinner 定义专门的变量，如 --spinner-track-color 和 --spinner-color */
+.spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid rgba(255, 255, 255, 0.3); /* 如果按钮文字是白色，这个透明度可以 */
+    border-radius: 50%;
+    border-top-color: #fff; /* 同上 */
+    animation: spin 1s ease-in-out infinite;
+    -webkit-animation: spin 1s ease-in-out infinite;
+}
+/* 如果按钮文字颜色会变，spinner 颜色也需要用变量 */
+/*
+.dark-theme .search-submit-btn .spinner {
+    border: 2px solid var(--spinner-border-dark, rgba(0, 0, 0, 0.3));
+    border-top-color: var(--spinner-top-dark, #000);
+}
+*/
+
+
+@keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}

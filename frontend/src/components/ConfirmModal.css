@@ -1,0 +1,79 @@
+/* frontend/src/components/ConfirmModal.css */
+.confirm-modal-overlay {
+    position: fixed;
+    inset: 0; /* 等同于 top: 0; right: 0; bottom: 0; left: 0; */
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* 确保在最上层 */
+    padding: 1rem; /* 确保小屏幕下模态框不会贴边 */
+}
+
+.confirm-modal-content {
+    background-color: var(--settings-bg-color); /* 使用设置页面的背景色变量 */
+    color: var(--settings-text-color);         /* 使用设置页面的文字颜色变量 */
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 400px; /* 模态框最大宽度 */
+    text-align: left; /* 内容左对齐 */
+    animation: fadeInModal 0.3s ease-out;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.confirm-modal-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--settings-header-color); /* 使用设置页面的标题颜色 */
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.confirm-modal-message {
+    font-size: 1em;
+    line-height: 1.6;
+    color: var(--settings-text-secondary-color); /* 使用次要文字颜色 */
+    margin-bottom: 1.5rem;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    justify-content: flex-end; /* 按钮靠右 */
+    gap: 0.75rem; /* 按钮之间的间距 */
+}
+
+.confirm-modal-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    border: 1px solid transparent; /* 默认无边框，或使用 --settings-border-color */
+}
+
+.confirm-modal-btn.confirm {
+    background-color: var(--settings-accent-color); /* 使用设置页面的强调色 */
+    color: var(--button-text-color, white); /* 确保文字颜色与背景对比 */
+    border-color: var(--settings-accent-color);
+}
+
+.confirm-modal-btn.confirm:hover {
+    opacity: 0.85; /* 或者定义一个 --settings-accent-hover-color */
+}
+
+.confirm-modal-btn.cancel {
+    background-color: var(--settings-button-bg-color); /* 使用设置页面的普通按钮背景 */
+    color: var(--settings-button-text-color);
+    border: 1px solid var(--settings-border-color);
+}
+
+.confirm-modal-btn.cancel:hover {
+    background-color: var(--settings-button-hover-bg-color);
+}

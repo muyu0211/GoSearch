@@ -1,0 +1,192 @@
+html {
+    background-color: rgba(27, 38, 54, 1);
+    text-align: center;
+    color: white;
+}
+
+body {
+    margin: 0;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 400;
+    src: local(""),
+    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+}
+
+#app {
+    height: 100vh;
+    text-align: center;
+}
+
+:root {
+    --scrollbar-track-bg: #ffffff;      /* 亮色主题轨道背景 */
+    --scrollbar-thumb-bg: #e3e3e3;      /* 亮色主题滑块背景 */
+    --scrollbar-thumb-hover-bg: #dadada;/* 亮色主题滑块悬停背景 */
+    --border-radius-large: 15px;
+    --border-radius-middle: 8px;
+    --border-radius-small: 5px;
+
+    --shadow-primary: #7e7d7d
+}
+
+/* Light Theme (Default) */
+body.theme-light {
+    --bg-primary: #f4f6f8;         /* 主背景色 */
+    --bg-secondary: #ffffff;       /* 卡片、面板背景色 */
+    --bg-tertiary: #e9e9e9;        /* 悬停、边框等辅助背景 */
+    --bg-accent: #007bff;          /* 主题强调色 (如按钮) */
+    --bg-accent-hover: #0056b3;    /* 强调色悬停 */
+    --bg-disabled: #c0c0c0;        /* 禁用状态背景 */
+
+    --text-primary: #333333;       /* 主要文字颜色 */
+    --text-secondary: #555555;     /* 次要文字、占位符 */
+    --text-accent: #ffffff;        /* 强调色上的文字 (如按钮内文字) */
+    --text-link: #007bff;          /* 链接颜色 */
+    --text-disabled: #888888;      /* 禁用状态文字 */
+
+    --app-bg-color: #f4f6f8;
+    --app-text-color: #333;
+    --header-bg-color: #ffffff;
+    --header-text-color: #2c3e50;
+    --header-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --button-bg-color: #007bff;
+    --button-text-color: white;
+    --button-hover-bg-color: #0056b3;
+    --input-bg-color: #fff;
+    --input-border-color: #ccc;
+    --input-focus-border-color: #007bff;
+    --results-bg-color: #fff;
+    --results-item-hover-bg-color: #f0f8ff;
+    --results-item-selected-bg-color: #e0f0ff;
+    --preview-bg-color: #fdfdfd;
+    --statusbar-bg-color: #333;
+    --statusbar-text-color: white;
+
+    /* Settings Page Specific */
+    --settings-bg-color: #ffffff;
+    --settings-text-color: #333333;
+    --settings-text-secondary-color: #555555;
+    --settings-header-color: #007bff;
+    --settings-subheader-color: #2c3e50;
+    --settings-accent-color: #007bff;
+    --settings-border-color: #e0e0e0;
+    --settings-section-bg-color: #f9f9f9;
+    --settings-button-bg-color: #f0f0f0;
+    --settings-button-text-color: #333;
+    --settings-button-hover-bg-color: #e0e0e0;
+
+    --border-primary: #dddddd;     /* 主要边框颜色 */
+    --border-secondary: #cccccc;   /* 次要边框颜色 */
+    --border-focus: #007bff;       /* 输入框聚焦边框 */
+}
+
+/* Dark Theme */
+body.theme-dark {
+    --bg-primary: #1a1a2e;         /* 深色主背景 */
+    --bg-secondary: #242f40;       /* 深色卡片、面板背景 */
+    --bg-tertiary: #3a3a5e;        /* 深色悬停、边框 */
+    --bg-accent: #1e90ff;          /* 深色主题强调色 (亮蓝色) */
+    --bg-accent-hover: #0073e6;    /* 深色强调色悬停 */
+    --bg-disabled: #4a4a6a;        /* 深色禁用背景 */
+
+    --text-primary: #e0e0e0;       /* 深色主要文字 (浅灰) */
+    --text-secondary: #a0a0c0;     /* 深色次要文字 */
+    --text-accent: #ffffff;        /* 强调色上的文字 (通常不变) */
+    --text-link: #1e90ff;          /* 深色链接颜色 */
+    --text-disabled: #707090;      /* 深色禁用文字 */
+
+    --app-bg-color: #1a1a1a; /* 更深的背景 */
+    --app-text-color: #e0e0e0;
+    --header-bg-color: #2c2c2c; /* 深色头部 */
+    --header-text-color: #f0f0f0;
+    --header-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --button-bg-color: #007bff; /* 按钮颜色可以保持，或调整为深色主题的强调色 */
+    --button-text-color: white;
+    --button-hover-bg-color: #0056b3;
+    --input-bg-color: #333;
+    --input-border-color: #555;
+    --input-text-color: #e0e0e0; /* 输入框文字颜色 */
+    --input-focus-border-color: #007bff;
+    --results-bg-color: #2c2c2c;
+    --results-item-hover-bg-color: #3a3a3a;
+    --results-item-selected-bg-color: #4a4a4a;
+    --preview-bg-color: #222;
+    --statusbar-bg-color: #111;
+    --statusbar-text-color: #ccc;
+
+    /* Settings Page Specific for Dark Theme */
+    --settings-bg-color: #212121; /* 深色背景 */
+    --settings-text-color: #e0e0e0;
+    --settings-text-secondary-color: #b0b0b0;
+    --settings-header-color: #64b5f6; /* 亮蓝色作为强调 */
+    --settings-subheader-color: #c0c0c0;
+    --settings-accent-color: #64b5f6;
+    --settings-border-color: #424242; /* 深色边框 */
+    --settings-section-bg-color: #2c2c2c; /* 深色区域背景 */
+    --settings-button-bg-color: #424242;
+    --settings-button-text-color: #e0e0e0;
+    --settings-button-hover-bg-color: #525252;
+
+    --border-primary: #3a3a5e;     /* 深色主要边框 */
+    --border-secondary: #4a4a6a;   /* 深色次要边框 */
+    --border-focus: #1e90ff;       /* 深色输入框聚焦边框 */
+
+    --scrollbar-track-bg: var(--preview-bg-color, #2c2c2c); /* 深色主题轨道背景 (使用卡片背景色或稍浅一点) */
+    --scrollbar-thumb-bg: var(--settings-button-bg-color, #424242); /* 深色主题滑块背景 (使用按钮背景或稍亮一点的灰色) */
+    --scrollbar-thumb-hover-bg: var(--settings-button-hover-bg-color, #525252); /* 深色主题滑块悬停背景 */
+}
+
+/* 其他组件也应该使用 CSS 变量 */
+.search-input-field {
+    background-color: var(--input-bg-color);
+    border-color: var(--input-border-color);
+    color: var(--input-text-color); /* 确保输入文字颜色在深色模式下可见 */
+}
+.search-input-field:focus {
+    border-color: var(--input-focus-border-color);
+}
+/* ... 为 ResultsList, PreviewPane, StatusBar 等组件的背景和文字颜色也应用 CSS 变量 ... */
+.results-list { background-color: var(--results-bg-color); /* ... */ }
+.result-item:hover { background-color: var(--results-item-hover-bg-color); }
+.result-item.selected { background-color: var(--results-item-selected-bg-color); }
+.preview-pane { background-color: var(--preview-bg-color); /* ... */ }
+.status-bar { background-color: var(--statusbar-bg-color); color: var(--statusbar-text-color); }
+
+::-webkit-scrollbar {
+    width: 10px; /* 垂直滚动条宽度 */
+    height: 10px; /* 水平滚动条高度 */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-bg); /* 默认轨道的颜色 */
+    border-radius: 8px; /* 可选：给轨道加圆角 */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-bg); /* 默认滑块的颜色 */
+    border-radius: 5px; /* 可选：给滑块加圆角 */
+    border: 2px solid var(--scrollbar-track-bg); /* 可选：给滑块一个类似边框的效果，使其与轨道有间隔 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-bg); /* 默认滑块悬停颜色 */
+}
+
+::-webkit-scrollbar-corner { /* 右下角两个滚动条相交的地方 */
+    background: var(--scrollbar-track-bg);
+}
+
+/* 注意：Firefox 的滚动条定制性较差，只能设置宽度和颜色 */
+* { /* 或者 html, body, 或特定滚动容器 */
+    scrollbar-width: thin; /* 可以是 auto, thin, none */
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg); /* 滑块颜色 轨道颜色 */
+}
