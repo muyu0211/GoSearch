@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"GoSearch/app/service"
 	"fmt"
 	"sync"
 )
@@ -12,27 +13,27 @@ type API struct {
 
 func NewAPI() *API {
 	// 初始化 systemInfo 单例对象
-	getSysInfoInstance()
+	service.GetSysInfoInstance()
 	return &API{}
 }
 
-func (api *API) GetAppConfig() (*AppConfig, error) {
-	if AppConf != nil {
-		return AppConf, nil
+func (api *API) GetAppConfig() (*service.AppConfig, error) {
+	if service.AppConf != nil {
+		return service.AppConf, nil
 	}
 	return nil, fmt.Errorf("app config is nil")
 }
 
-func (api *API) GetBootConfig() (*BootAppConfig, error) {
-	if BootConf != nil {
-		return BootConf, nil
+func (api *API) GetBootConfig() (*service.BootAppConfig, error) {
+	if service.BootConf != nil {
+		return service.BootConf, nil
 	}
 	return nil, fmt.Errorf("boot config is nil")
 }
 
-func (api *API) SetAppConfig(config *AppConfig) error {
+func (api *API) SetAppConfig(config *service.AppConfig) error {
 	// 对比字段, 防止前端传递过来的空字段值覆盖配置文件
-	if err := SetAppConfig(config); err != nil {
+	if err := service.SetAppConfig(config); err != nil {
 		return err
 	}
 	return nil
@@ -40,16 +41,16 @@ func (api *API) SetAppConfig(config *AppConfig) error {
 
 func (api *API) SetBootConfig(desDir string) error {
 	// 对比字段, 防止前端传递过来的空字段值覆盖配置文件
-	if err := ChangeBootConfig(desDir); err != nil {
+	if err := service.ChangeBootConfig(desDir); err != nil {
 		return err
 	}
 	return nil
 }
 
 // ============ 绑定SystemInfo api ============
-func (api *API) GetSystemInfo() (*SystemInfo, error) {
+func (api *API) GetSystemInfo() (*service.SystemInfo, error) {
 	// 获取单例对象
-	instance := getSysInfoInstance()
+	instance := service.GetSysInfoInstance()
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)

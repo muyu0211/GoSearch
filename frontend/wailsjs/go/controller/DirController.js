@@ -6,6 +6,10 @@ export function GetAppStatus() {
   return window['go']['controller']['DirController']['GetAppStatus']();
 }
 
+export function GetDiskInfo() {
+  return window['go']['controller']['DirController']['GetDiskInfo']();
+}
+
 export function GetInitialDir(arg1) {
   return window['go']['controller']['DirController']['GetInitialDir'](arg1);
 }

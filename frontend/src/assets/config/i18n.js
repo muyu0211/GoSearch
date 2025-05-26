@@ -22,6 +22,7 @@ const resources = {
             "Settings": "Settings",
             "Go to Home": "Go to Home",
             "Back to Home": "Back to Home",
+            "Loading": "Loading",
             "Loading settings...": "Loading settings...",
             "Search files placeholder": "Search files (e.g., 'report.docx' or 'images from last week > 1MB')",
             "To get started, please add some directories to index in the settings.": "To get started, please add some directories to index in the settings.",
@@ -86,6 +87,12 @@ const resources = {
             "Search files": "Search files",
             "Close": "Close",
             "Search": "Search",
+
+            "Loading disk information": "Loading disk information",
+            "No disks found or unable to retrieve disk information": "No disks found or unable to retrieve disk information",
+            "Drives and Devices": "Drives and Devices",
+            "Click to explore": "Click to explore",
+            "free of": "free of",
         }
     },
     zh: { // 中文翻译
@@ -94,6 +101,7 @@ const resources = {
             "Version": "版本",
             "Welcome to GoSearch!": "欢迎使用 GoSearch！",
             "Settings": "设置",
+            "Loading": "加载中",
             "Loading settings...": "加载设置中...",
             "Go to Home": "返回首页",
             "Back to Home": "返回首页",
@@ -159,6 +167,12 @@ const resources = {
             "Search files": "搜索文件",
             "Close": "关闭",
             "Search": "搜索",
+
+            "Loading disk information": "加载磁盘信息中",
+            "No disks found or unable to retrieve disk information": "找不到磁盘或无法检索磁盘信息",
+            "Drives and Devices": "驱动和设备",
+            "Click to explore": "点击索引",
+            "free of": "空闲",
         }
     }
 };

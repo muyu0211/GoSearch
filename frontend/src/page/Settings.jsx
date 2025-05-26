@@ -8,16 +8,16 @@ import {
     GetInitialDir,
     OpenDirectory,
 } from '../../wailsjs/go/controller/DirController';
-import { GetAppConfig, GetBootConfig, SetBootConfig} from '../../wailsjs/go/controller/API';
+import {GetAppConfig, GetBootConfig, SetAppConfig, SetBootConfig} from '../../wailsjs/go/controller/API';
 
-
-function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLanguage, onDirectoriesChanged }) {
-    const { t, i18n } = useTranslation(); // i18n 实例用于获取和改变语言
+function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitialAppConfig }) {
+    const { t, i18n } = useTranslation();
     const [appConfig, setAppConfig] = useState(null); // 存储从后端加载的 AppConfig
     const [bootConfig, setBootConfig] = useState(null); // 存储从后端加载的 BootConfig
     const [directories, setDirectories] = useState([]);
     const [isLoading, setIsLoading] = useState(true); // 统一的加载状态
     const [isUpdatingDirs, setIsUpdatingDirs] = useState(false); // 用于添加/删除目录时的 loading
+    const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
     const [showLanguageConfirm, setShowLanguageConfirm] = useState(false);
     const [targetLanguage, setTargetLanguage] = useState('');
     const [isChangingConfigDir, setIsChangingConfigDir] = useState(false); // 新增状态
@@ -29,11 +29,11 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
             const [appConf, bootConf, dirs] = await Promise.all([
                 GetAppConfig(),
                 GetBootConfig(),
-                GetInitialDir()
+                // GetInitialDir(),
             ]);
             setAppConfig(appConf || {});
             setBootConfig(bootConf || {});
-            setDirectories(dirs || []);
+            // setDirectories(dirs || []);
         } catch (err) {
             toast.error(t("Could not load settings data."))
         } finally {
@@ -45,6 +45,13 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
     useEffect(() => {
         fetchPageData();
     }, [fetchPageData]);
+
+    // 应用主题
+    useEffect(() => {
+        document.body.className = '';
+        document.body.classList.add(`theme-${currentTheme}`);
+        localStorage.setItem('appTheme', currentTheme);
+    }, [currentTheme]);
 
     // 修改配置文件目录
     const handleChangeConfigDir = async () => {
@@ -61,9 +68,6 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
                 await SetBootConfig(newConfigDir);      // 更新后端BootConfig
                 toast.success(t("Data and configuration directory changed successfully! An application restart may be required for all changes to take full effect."));
                 await fetchPageData(); // 这会更新 bootConfig 和 appConfig
-                // if (onConfigReloadNeeded) { // 通知 App.jsx 可能需要做更多事情
-                //     onConfigReloadNeeded();
-                // }
             }else{
                 toast.info(t("You have canceled the change to the catalog"))
             }
@@ -88,7 +92,7 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
                 // setAppConfig(appConf || {});
                 // setBootConfig(bootConf || {});
                 // setDirectories(dirs || []);
-                if (onDirectoriesChanged) onDirectoriesChanged();
+                // if (onDirectoriesChanged) onDirectoriesChanged();
             } else {
                 // 用户取消了选择，selectedPath 会是空字符串或 undefined/null
                 console.log("User cancelled directory selection.");
@@ -105,7 +109,7 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
         try {
             // await RemoveIndexedDirectory(dirToRemove); // 后端应保存 AppConfig
             await fetchPageData(); // 重新获取所有数据
-            if (onDirectoriesChanged) onDirectoriesChanged();
+            // if (onDirectoriesChanged) onDirectoriesChanged();
         } catch (err) {
             console.error("Error removing directory:", err);
             toast.error(t("Failed to remove directory."));
@@ -113,6 +117,28 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
             setIsUpdatingDirs(false);
         }
     };
+
+    // 切换语言
+    const handleLanguageChange = useCallback(async (newLang) => {
+        try {
+            if (i18n.language !== newLang) {
+                await i18n.changeLanguage(newLang);
+            }
+            localStorage.setItem('appLanguage', newLang);
+            setCurrentLanguage(newLang); // 更新 App.jsx 的 state
+            toast.success(t('Language Changed successfully!'));
+            // 实时保存语言到后端 (如果你采用这种策略)
+            let configToSave = {
+                ...(initialAppConfig || {}),
+                language: newLang,
+            };
+
+            await SetAppConfig(configToSave);
+            setInitialAppConfig(configToSave);
+        } catch (error) {
+            console.error("Error changing language in App.jsx:", error);
+        }
+    }, [i18n, initialAppConfig]);
 
     const promptChangeLanguage = (lng) => {
         if (lng && lng !== currentLanguage) {
@@ -125,7 +151,8 @@ function SettingsPage({ currentTheme, onChangeTheme, currentLanguage, onChangeLa
 
     const confirmChangeLanguage = async () => {
         if (targetLanguage) {
-            await onChangeLanguage(targetLanguage); // 调用 App.jsx 传递过来的函数
+            // await onChangeLanguage(targetLanguage); // 调用 App.jsx 传递过来的函数
+            await handleLanguageChange(targetLanguage)
         }
         setShowLanguageConfirm(false);
         setTargetLanguage('');

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"GoSearch/app/service"
 	"context"
 	"embed"
 	"fmt"
@@ -18,7 +19,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 		err error
 	)
 	// 使用引导配置文件进行app启动
-	if err = EnsureInitialized(); err != nil {
+	if err = service.EnsureInitialized(); err != nil {
 		fmt.Println("Get AppConfig Error:", err)
 		return
 	}
@@ -40,7 +41,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 			dirController.setCtx(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
-			if err = AppConf.ChangeAppConfig(); err != nil {
+			if err = service.AppConf.ChangeAppConfig(); err != nil {
 				log.Printf("Shutdown error: %v", err.Error())
 			}
 			fmt.Println("GoSearch Shutdown!!!")

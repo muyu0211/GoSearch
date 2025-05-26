@@ -1,6 +1,7 @@
-package controller
+package service
 
 import (
+	"GoSearch/app/utils"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"log"
@@ -33,15 +34,8 @@ var (
 	sysInfoMutex sync.RWMutex // 用于保护 sysInfo 的并发访问
 )
 
-const (
-	KB uint64 = 1024
-	MB        = KB * 1024
-	GB        = MB * 1024
-	TB        = GB * 1024
-)
-
-// 获取systemInfo单例对象
-func getSysInfoInstance() *SystemInfo {
+// GetSysInfoInstance 获取systemInfo单例对象
+func GetSysInfoInstance() *SystemInfo {
 	// 初始化单例
 	sysInfoOnce.Do(func() {
 		sysInfo = &SystemInfo{
@@ -65,8 +59,8 @@ func (sys *SystemInfo) UpdateMemInfo() {
 	if v, err = mem.VirtualMemory(); err != nil {
 		log.Printf("Error getting virtual memory: %v", err)
 	}
-	sys.MemAll = v.Total / MB
-	sys.MemFree = v.Available / MB
+	sys.MemAll = v.Total / utils.MB
+	sys.MemFree = v.Available / utils.MB
 	sys.MemUsed = sys.MemAll - sys.MemFree
 	if sys.MemAll > 0 {
 		sys.MemUsedPercent = float64(sys.MemUsed) / float64(sys.MemAll) * 100.0

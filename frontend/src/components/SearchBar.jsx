@@ -1,15 +1,37 @@
 // frontend/src/components/SearchBar.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import './SearchBar.css'; // 为 SearchBar 创建一个 CSS 文件
+import './SearchBar.css';
+import GoSearch_logo from "../assets/images/GoSearch.svg";
+import {SetAppConfig} from "../../wailsjs/go/controller/API.js";
+import {toast} from "react-toastify";
+import {useTranslation} from "react-i18next";
+import SystemMonitor from "./SystemMonitor.jsx"; // 为 SearchBar 创建一个 CSS 文件
+import { useNavigation } from '../context/NavigationContext'; // 导入 useNavigation
 
-function SearchBar({ onSearch, onNaturalSearch, isLoading, initialTerm = '' }) {
-    const [inputValue, setInputValue] = useState(initialTerm);
+function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
+    const { t, i18n } = useTranslation(); // 获取翻译函数
+    const { currentPage, navigateTo } = useNavigation(); // 使用 Context
     const inputRef = useRef(null); // 用于聚焦输入框
+    const [inputValue, setInputValue] = useState();
+    // const [theme, setTheme] = useState(() => localStorage.getItem('appTheme') || 'light');
+    const [showSystemMonitor, setShowSystemMonitor] = useState(false); // 控制监控弹窗
+    const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
+    const [initialAppConfig, setInitialAppConfig] = useState(null); // 存储从后端加载的完整配置
 
-    // 当外部 initialTerm 改变时，同步到输入框
+    // 应用主题
     useEffect(() => {
-        setInputValue(initialTerm);
-    }, [initialTerm]);
+        document.body.className = '';
+        document.body.classList.add(`theme-${currentTheme}`);
+        localStorage.setItem('appTheme', currentTheme);
+    }, [currentTheme]);
+
+    // 应用语言
+    useEffect(() => {
+        if (i18n.language !== currentLanguage) {
+            i18n.changeLanguage(currentLanguage);
+        }
+        localStorage.setItem('appLanguage', currentLanguage);
+    }, [currentLanguage, i18n]);
 
     // 允许用户按 Enter 键提交表单
     const handleSubmit = (e) => {
@@ -39,48 +61,111 @@ function SearchBar({ onSearch, onNaturalSearch, isLoading, initialTerm = '' }) {
     const handleClearInput = () => {
         setInputValue('');
         if (inputRef.current) {
-            inputRef.current.focus(); // 清除后重新聚焦
+            inputRef.current.focus();
         }
-        onSearch(""); // 清除后也触发一次空搜索，以清空结果列表
+    };
+
+    //  更换主题
+    // const handleThemeChange = async (newTheme) => {
+    //     setTheme(newTheme);
+    //     try {
+    //         let configToSave = {
+    //             ...(initialAppConfig || {}), // 基于初始加载的配置
+    //             theme: newTheme,
+    //         };
+    //
+    //         await SetAppConfig(configToSave);
+    //         setInitialAppConfig(configToSave);
+    //         toast.success(t('Theme Changed successfully!'));
+    //     } catch (error) {
+    //         console.error("Error saving theme to backend:", error);
+    //     }
+    // };
+
+    // 打开系统监视器
+    const toggleSystemMonitor = () => {
+        setShowSystemMonitor(prev => !prev);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="search-bar-container">
-            <div className="search-input-wrapper">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Search files (e.g., 'report.docx' or 'images from last week > 1MB')"
-                    className="search-input-field"
-                    disabled={isLoading}
-                    aria-label="Search files"
-                />
-                {inputValue && !isLoading && (
-                    <button
-                        type="button"
-                        onClick={handleClearInput}
-                        className="clear-input-btn"
-                        aria-label="Clear search input"
-                    >
-                        × {/* 'X' character for clear */}
+        <header className="app-header">
+            <div className="logo-area">
+                <img src={GoSearch_logo} alt="GoSearch Logo" className="header-logo"/>
+                <span className="app-title" onClick={() => navigateTo('home')} style={{cursor: 'pointer'}}
+                      title={t('Go to Home')}>
+                    GoSearch
+                  </span>
+            </div>
+            {/*显示搜索栏*/}
+            {currentPage === 'home' && (
+                <div className="search-area">
+                     <form onSubmit={handleSubmit} className="search-bar-container">
+                         <div className="search-input-wrapper">
+                             <input
+                                ref={inputRef}
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder="Search files (e.g., 'report.docx' or 'images from last week > 1MB')"
+                                className="search-input-field"
+                                disabled={isLoading}
+                                aria-label="Search files"
+                            />
+                            {inputValue && !isLoading && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearInput}
+                                    className="clear-input-btn"
+                                    aria-label="Clear search input"
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                        <button
+                            type="submit"
+                            className="search-submit-btn"
+                            disabled={isLoading}
+                            aria-label="Submit search"
+                        >
+                            {isLoading ? (
+                                <span className="spinner" aria-hidden="true"></span>
+                            ) : (
+                                'Search'
+                            )}
+                        </button>
+                    </form>
+                </div>
+            )}
+            <div className="settings-action-area">
+                {/* 系统监控触发按钮 */}
+                <button
+                    type="button"
+                    onClick={toggleSystemMonitor}
+                    className="system-monitor-toggle-btn"
+                    title={t('Toggle System Monitor')}
+                    aria-expanded={showSystemMonitor}
+                >
+                    📊
+                </button>
+                <button onClick={() => onChangeTheme(currentTheme === 'light' ? 'dark' : 'light')}
+                        className="theme-toggle-btn"
+                        title={`Switch to ${currentTheme === 'light' ? t('Dark') : t('Light')} Mode`}>
+                    {currentTheme === 'light' ? '🌙' : '☀️'}
+                </button>
+                {currentPage === 'home' ? (
+                    <button onClick={() => navigateTo('settings')} className="settings-btn" title={t('Settings')}>
+                        ⚙️
+                    </button>
+                ) : (
+                    <button onClick={() => navigateTo('home')} className="settings-btn" title={t('Back to Home')}>
+                        ↩️
                     </button>
                 )}
             </div>
-            <button
-                type="submit"
-                className="search-submit-btn"
-                disabled={isLoading}
-                aria-label="Submit search"
-            >
-                {isLoading ? (
-                    <span className="spinner" aria-hidden="true"></span> // 简单的 CSS spinner
-                ) : (
-                    'Search'
-                )}
-            </button>
-        </form>
+            {/* 条件渲染 SystemMonitor 组件 */}
+            <SystemMonitor isOpen={showSystemMonitor} onClose={toggleSystemMonitor} />
+        </header>
     );
 }
 

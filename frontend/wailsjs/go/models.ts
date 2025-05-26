@@ -1,5 +1,34 @@
 export namespace controller {
 	
+	export class Disk {
+	    device: string;
+	    mount_point: string;
+	    file_sys_type: string;
+	    total: number;
+	    free: number;
+	    used: number;
+	    used_percent: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Disk(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.device = source["device"];
+	        this.mount_point = source["mount_point"];
+	        this.file_sys_type = source["file_sys_type"];
+	        this.total = source["total"];
+	        this.free = source["free"];
+	        this.used = source["used"];
+	        this.used_percent = source["used_percent"];
+	    }
+	}
+
+}
+
+export namespace service {
+	
 	export class AppConfig {
 	    app_name: string;
 	    app_version: string;

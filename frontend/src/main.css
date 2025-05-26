@@ -35,7 +35,8 @@ body {
     --border-radius-middle: 8px;
     --border-radius-small: 5px;
 
-    --shadow-primary: #7e7d7d
+    --shadow-primary: #7e7d7d;
+    --shadow-secondary: #a6a6a6;
 }
 
 /* Light Theme (Default) */
