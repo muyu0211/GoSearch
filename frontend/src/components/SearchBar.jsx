@@ -13,10 +13,8 @@ function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
     const { currentPage, navigateTo } = useNavigation(); // 使用 Context
     const inputRef = useRef(null); // 用于聚焦输入框
     const [inputValue, setInputValue] = useState();
-    // const [theme, setTheme] = useState(() => localStorage.getItem('appTheme') || 'light');
     const [showSystemMonitor, setShowSystemMonitor] = useState(false); // 控制监控弹窗
     const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
-    const [initialAppConfig, setInitialAppConfig] = useState(null); // 存储从后端加载的完整配置
 
     // 应用主题
     useEffect(() => {
@@ -65,23 +63,6 @@ function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
         }
     };
 
-    //  更换主题
-    // const handleThemeChange = async (newTheme) => {
-    //     setTheme(newTheme);
-    //     try {
-    //         let configToSave = {
-    //             ...(initialAppConfig || {}), // 基于初始加载的配置
-    //             theme: newTheme,
-    //         };
-    //
-    //         await SetAppConfig(configToSave);
-    //         setInitialAppConfig(configToSave);
-    //         toast.success(t('Theme Changed successfully!'));
-    //     } catch (error) {
-    //         console.error("Error saving theme to backend:", error);
-    //     }
-    // };
-
     // 打开系统监视器
     const toggleSystemMonitor = () => {
         setShowSystemMonitor(prev => !prev);
@@ -92,51 +73,51 @@ function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
             <div className="logo-area">
                 <img src={GoSearch_logo} alt="GoSearch Logo" className="header-logo"/>
                 <span className="app-title" onClick={() => navigateTo('home')} style={{cursor: 'pointer'}}
-                      title={t('Go to Home')}>
+                      title={t('GoSearch')}>
                     GoSearch
                   </span>
             </div>
-            {/*显示搜索栏*/}
-            {currentPage === 'home' && (
-                <div className="search-area">
-                     <form onSubmit={handleSubmit} className="search-bar-container">
-                         <div className="search-input-wrapper">
-                             <input
-                                ref={inputRef}
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Search files (e.g., 'report.docx' or 'images from last week > 1MB')"
-                                className="search-input-field"
-                                disabled={isLoading}
-                                aria-label="Search files"
-                            />
-                            {inputValue && !isLoading && (
-                                <button
-                                    type="button"
-                                    onClick={handleClearInput}
-                                    className="clear-input-btn"
-                                    aria-label="Clear search input"
-                                >
-                                    ×
-                                </button>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            className="search-submit-btn"
-                            disabled={isLoading}
-                            aria-label="Submit search"
-                        >
-                            {isLoading ? (
-                                <span className="spinner" aria-hidden="true"></span>
-                            ) : (
-                                'Search'
-                            )}
-                        </button>
-                    </form>
-                </div>
-            )}
+            {/*/!*显示搜索栏*!/*/}
+            {/*{currentPage === 'home' && (*/}
+            {/*    <div className="search-area">*/}
+            {/*         <form onSubmit={handleSubmit} className="search-bar-container">*/}
+            {/*             <div className="search-input-wrapper">*/}
+            {/*                 <input*/}
+            {/*                    ref={inputRef}*/}
+            {/*                    type="text"*/}
+            {/*                    value={inputValue}*/}
+            {/*                    onChange={(e) => setInputValue(e.target.value)}*/}
+            {/*                    placeholder="Search files (e.g., 'report.docx' or 'images from last week > 1MB')"*/}
+            {/*                    className="search-input-field"*/}
+            {/*                    disabled={isLoading}*/}
+            {/*                    aria-label="Search files"*/}
+            {/*                />*/}
+            {/*                {inputValue && !isLoading && (*/}
+            {/*                    <button*/}
+            {/*                        type="button"*/}
+            {/*                        onClick={handleClearInput}*/}
+            {/*                        className="clear-input-btn"*/}
+            {/*                        aria-label="Clear search input"*/}
+            {/*                    >*/}
+            {/*                        ×*/}
+            {/*                    </button>*/}
+            {/*                )}*/}
+            {/*            </div>*/}
+            {/*            <button*/}
+            {/*                type="submit"*/}
+            {/*                className="search-submit-btn"*/}
+            {/*                disabled={isLoading}*/}
+            {/*                aria-label="Submit search"*/}
+            {/*            >*/}
+            {/*                {isLoading ? (*/}
+            {/*                    <span className="spinner" aria-hidden="true"></span>*/}
+            {/*                ) : (*/}
+            {/*                    'Search'*/}
+            {/*                )}*/}
+            {/*            </button>*/}
+            {/*        </form>*/}
+            {/*    </div>*/}
+            {/*)}*/}
             <div className="settings-action-area">
                 {/* 系统监控触发按钮 */}
                 <button
@@ -153,7 +134,7 @@ function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
                         title={`Switch to ${currentTheme === 'light' ? t('Dark') : t('Light')} Mode`}>
                     {currentTheme === 'light' ? '🌙' : '☀️'}
                 </button>
-                {currentPage === 'home' ? (
+                {currentPage !== 'settings' ? (
                     <button onClick={() => navigateTo('settings')} className="settings-btn" title={t('Settings')}>
                         ⚙️
                     </button>

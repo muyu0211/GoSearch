@@ -12,6 +12,10 @@ const (
 	LINUX   = "linux"
 )
 
+var (
+	SEGMENT = "\\"
+)
+
 const (
 	KB uint64 = 1024
 	MB        = KB * 1024

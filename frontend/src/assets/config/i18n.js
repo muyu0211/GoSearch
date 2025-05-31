@@ -16,6 +16,7 @@ const resources = {
     // }
     en: {
         translation: {
+            "GoSearch": "GoSearch",
             "AppName": "AppName",
             "Version": "Version",
             "Welcome to GoSearch!": "Welcome to GoSearch!",
@@ -93,10 +94,36 @@ const resources = {
             "Drives and Devices": "Drives and Devices",
             "Click to explore": "Click to explore",
             "free of": "free of",
+            "Exploring {{diskPath}} (feature coming soon!)": "Exploring {{diskPath}} (feature coming soon!)",
+
+            "Could not load directory content.": "Could not load directory content.",
+            "Error loading directory: {{message}}": "Error loading directory: {{message}}",
+            "File preview not yet implemented.": "File preview not yet implemented.",
+            "Loading directory": "Loading directory",
+            "Go to My Device": "Go to My Device",
+            "Refresh": "Refresh",
+            "Folder": "Folder",
+            "File": "File",
+            "This folder is empty.": "This folder is empty",
+            "My Computer": "My Computer",
+            "Usage information not available": "Usage information not available",
+            "Go Up": "Go Up",
+            "Loading drives": "Loading drives",
+            "Error loading data: {{message}}": "Error loading data: {{message}}",
+            "Name": "Name",
+            "Size": "Size",
+            "Type": "Type",
+            "Path": "Path",
+            "Modified": "Modified",
+
+            "Click to edit path": "Click to edit path",
+            "Current path, editable": "Current path, editable",
+            "Retrieve Description": "Retrieve Description",
         }
     },
     zh: { // 中文翻译
         translation: {
+            "GoSearch": "GoSearch",
             "AppName": "应用",
             "Version": "版本",
             "Welcome to GoSearch!": "欢迎使用 GoSearch！",
@@ -173,6 +200,31 @@ const resources = {
             "Drives and Devices": "驱动和设备",
             "Click to explore": "点击索引",
             "free of": "空闲",
+            "Exploring {{diskPath}} (feature coming soon!)": "索引 {{diskPath}} (即将实现)",
+
+            "Could not load directory content.": "无法加载目录内容。",
+            "Error loading directory: {{message}}": "加载目录时出错：{{Message}",
+            "File preview not yet implemented.": "文件预览尚未实现。",
+            "Loading directory": "加载文件夹中",
+            "Go to My Device": "我的电脑",
+            "Refresh": "刷新",
+            "Folder": "文件夹",
+            "File": "文件",
+            "Path": "路径",
+            "This folder is empty": "文件夹为空",
+            "My Computer": "我的电脑",
+            "Usage information not available": "文件大小信息获取失败",
+            "Go Up": "返回上一级",
+            "Loading drives": "加载驱动器",
+            "Error loading data: {{message}}": "加载数据时出错: {{message}}",
+            "Name": "名称",
+            "Size": "大小",
+            "Type": "类型",
+            "Modified": "修改时间",
+
+            "Click to edit path": "点击编辑",
+            "Current path, editable": "当前路径",
+            "Retrieve Description": "查看检索说明"
         }
     }
 };

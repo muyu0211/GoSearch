@@ -1,0 +1,62 @@
+.breadcrumb-container {
+    display: flex;
+    align-items: center;
+    padding: 0 0.78rem;
+    height: 100%; /* 填充父容器高度 */
+    cursor: text; /* 提示可点击进入编辑 */
+    overflow: hidden; /* 防止面包屑过长时溢出 */
+    flex-grow: 1;
+}
+
+.breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap; /* 防止面包屑换行 */
+    overflow-x: auto; /* 如果面包屑太长，允许水平滚动 (可选) */
+    /* 简单的滚动条样式 (可选) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--input-border-color) var(--input-bg-color);
+}
+.breadcrumb-list::-webkit-scrollbar {
+    height: 6px;
+}
+.breadcrumb-list::-webkit-scrollbar-track {
+    background: var(--input-bg-color);
+}
+.breadcrumb-list::-webkit-scrollbar-thumb {
+    background-color: var(--input-border-color);
+    border-radius: 3px;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    margin: 0.2rem 0;
+}
+
+.breadcrumb-link {
+    color: var(--app-text-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    padding: 0.2rem 0;
+    border-radius: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.breadcrumb-link:hover {
+    background-color: var(--bg-tertiary, #e9ecef);
+    text-decoration: underline;
+}
+
+.breadcrumb-current {
+    font-weight: 500; /* 当前路径部分可以加粗一点 */
+    color: var(--app-text-color); /* 或者一个更突出的颜色 */
+    /*margin: 0 0 0 0.9rem;*/
+}

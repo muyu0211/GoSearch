@@ -23,9 +23,8 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 		fmt.Println("Get AppConfig Error:", err)
 		return
 	}
-
-	dirController := NewDirController()
 	api := NewAPI()
+	dirController := NewDirController()
 
 	app := application.NewWithOptions(&options.App{
 		Title:  "GoSearch",

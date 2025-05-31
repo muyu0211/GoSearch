@@ -43,7 +43,15 @@ func GetSysInfoInstance() *SystemInfo {
 			Arch:     runtime.GOARCH,
 			CpuCores: runtime.NumCPU(),
 		}
+		sysInfo.UpdateMemInfo()
+		sysInfo.UpdateCpuInfo()
+		sysInfo.UpdateGpuInfo()
 	})
+	if sysInfo.OS == utils.WINDOWS {
+		utils.SEGMENT = "\\"
+	} else {
+		utils.SEGMENT = "/"
+	}
 	return sysInfo
 }
 
@@ -59,8 +67,8 @@ func (sys *SystemInfo) UpdateMemInfo() {
 	if v, err = mem.VirtualMemory(); err != nil {
 		log.Printf("Error getting virtual memory: %v", err)
 	}
-	sys.MemAll = v.Total / utils.MB
-	sys.MemFree = v.Available / utils.MB
+	sys.MemAll = v.Total
+	sys.MemFree = v.Available
 	sys.MemUsed = sys.MemAll - sys.MemFree
 	if sys.MemAll > 0 {
 		sys.MemUsedPercent = float64(sys.MemUsed) / float64(sys.MemAll) * 100.0
@@ -69,7 +77,7 @@ func (sys *SystemInfo) UpdateMemInfo() {
 	}
 }
 
-func (sys *SystemInfo) UpdateCpuInfo() *SystemInfo {
+func (sys *SystemInfo) UpdateCpuInfo() {
 	sysInfoMutex.Lock()
 	defer sysInfoMutex.Unlock()
 
@@ -77,15 +85,13 @@ func (sys *SystemInfo) UpdateCpuInfo() *SystemInfo {
 	cc, err := cpu.Percent(time.Millisecond*1000, false)
 	if err != nil {
 		log.Printf("Error getting CPU percent: %v", err)
-		return nil
+		return
 	}
 	sys.CpuUsedPercent = cc[0]
-	return nil
 }
 
-func (sys *SystemInfo) UpdateGpuInfo() *SystemInfo {
+func (sys *SystemInfo) UpdateGpuInfo() {
 	sysInfoMutex.Lock()
 	defer sysInfoMutex.Unlock()
-
-	return nil
+	// TODO: Coming soon!
 }

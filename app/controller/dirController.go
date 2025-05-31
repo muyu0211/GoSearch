@@ -1,57 +1,26 @@
 package controller
 
 import (
-	"GoSearch/app/utils"
-	"fmt"
+	"GoSearch/app/service"
+	"errors"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
+	"os"
 	"strings"
-	"sync"
 )
 
 type DirController struct {
 	Base
+	pathCache        *service.PathCache
 	isIndexing       bool
 	totalFileIndexed int
-	lastScanTime     string
-}
-
-// Disk 磁盘信息
-type Disk struct {
-	Device      string  `json:"device"`        // 分区标识
-	MountPoint  string  `json:"mount_point"`   // 挂载点: 即该分区的文件路径起始位置
-	FSType      string  `json:"file_sys_type"` // 文件系统格式
-	Total       uint64  `json:"total"`         // 总空间 (bytes)
-	Free        uint64  `json:"free"`          // 可用空间 (bytes)
-	Used        uint64  `json:"used"`          // 已用空间 (bytes)
-	UsedPercent float64 `json:"used_percent"`  // 使用占比
-}
-type Directory struct {
-	Name string
-	Addr string
-}
-type File struct {
-	Name string
-	Addr string
-}
-
-type Cache struct {
-	lock  sync.RWMutex
-	Disks map[string][]Disk
-	Files map[string][]File
 }
 
 func NewDirController() *DirController {
-	return &DirController{}
-}
-
-func (d *DirController) GetAppStatus() (map[string]interface{}, error) {
-	log.Println("Backend API: GetAppStatus called.")
-
-	return map[string]interface{}{
-		"isIndexing": d.isIndexing,
-	}, nil
+	return &DirController{
+		pathCache: service.GetPathCache(),
+	}
 }
 
 // OpenDirectory 打开目录选择器
@@ -77,18 +46,12 @@ func (d *DirController) OpenDirectory(defaultDir string) (string, error) {
 	return selection, nil
 }
 
-// GetInitialDir 获取上一次索引的目录信息
-func (d *DirController) GetInitialDir(lastDir string) {
-	// 如果为空则获取初始盘符信息
-	fmt.Println("============================ 获取上一次索引的目录信息 ============================")
-}
-
 // GetDiskInfo 获取系统盘符信息
-func (d *DirController) GetDiskInfo() ([]Disk, error) {
+func (d *DirController) GetDiskInfo() ([]service.Disk, error) {
 	var (
 		// 获取信息信息单例对象
 		//sysInfo = service.GetSysInfoInstance()
-		disks   []Disk
+		disks   []service.Disk
 		infos   []disk.PartitionStat
 		useStat *disk.UsageStat
 		err     error
@@ -101,13 +64,13 @@ func (d *DirController) GetDiskInfo() ([]Disk, error) {
 			log.Printf("Get Disk %s error.", info.Device)
 			continue
 		}
-		disks = append(disks, Disk{
+		disks = append(disks, service.Disk{
 			Device:      info.Device,
 			MountPoint:  info.Device,
 			FSType:      info.Fstype,
-			Total:       useStat.Total / utils.MB,
-			Used:        useStat.Used / utils.MB,
-			Free:        useStat.Free / utils.MB,
+			Total:       useStat.Total,
+			Used:        useStat.Used,
+			Free:        useStat.Free,
 			UsedPercent: useStat.UsedPercent,
 		})
 	}
@@ -119,4 +82,83 @@ func (d *DirController) GetDiskInfo() ([]Disk, error) {
 	//	return nil, fmt.Errorf("unsupported operating system: %s", Sys.OS)
 	//}
 	return disks, nil
+}
+
+// IndexDir 获取当前路径下的文件和文件夹
+func (d *DirController) IndexDir(dirPath string) (*service.DirContent, error) {
+	// 查找cache是否命中
+	var (
+		dirCnt *service.DirContent
+		ok     bool
+		err    error
+	)
+
+	// Cache命中
+	if dirCnt, ok = d.pathCache.Get(dirPath); ok {
+		//log.Printf("cache命中")
+		return dirCnt, err
+	}
+	// cache未命中, 则手动查找，之后再放入cache
+	dirCnt = service.NewDirContent()
+	if err = dirCnt.GetDirCnt(dirPath); err != nil {
+		log.Printf("Get Directory Content Error: %v", err)
+		return nil, err
+	}
+	if err = d.pathCache.Put(dirCnt); err != nil {
+		log.Printf("Cache put error: %v", err)
+		return nil, err
+	}
+	return dirCnt, nil
+}
+
+// IndexFile 查找指定文件
+func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, error) {
+	var (
+		fileInfo os.FileInfo
+		err      error
+	)
+	// 判断用户输入的是否是完整的文件绝对路径
+	if fileInfo, err = os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.New("file is not Exist")
+		} else if os.IsPermission(err) {
+			return nil, errors.New("permission is denied")
+		} else {
+			return nil, err
+		}
+	}
+
+	return &service.FileSystemEntry{
+		Name:    fileInfo.Name(),
+		Path:    filePath,
+		IsDir:   false,
+		Size:    fileInfo.Size(),
+		ModTime: fileInfo.ModTime(),
+		Mode:    fileInfo.Mode(),
+	}, nil
+}
+
+// GetSearchInput 处理用户搜索框输入
+func (d *DirController) GetSearchInput(target string, currDirPath string) ([]*service.FileSystemEntry, error) {
+	// 解析用户输入: 当用户输入的不是绝对路径时会调用该函数
+	return nil, nil
+}
+
+// GetRetrieveDes 文件检索说明
+func (d *DirController) GetRetrieveDes() (string, error) {
+	return runtime.MessageDialog(d.ctx, runtime.MessageDialogOptions{
+		Type:    runtime.InfoDialog,
+		Title:   "文件检索说明",
+		Message: "文件检索说明",
+	})
+}
+
+// CreateDir TODO: 创建文件夹
+func (d *DirController) CreateDir(dirPath string, dirName string) error {
+	return nil
+}
+
+// CreateFile TODO: 创建文件
+func (d *DirController) CreateFile(dirPath string, fileName string) error {
+	return nil
 }

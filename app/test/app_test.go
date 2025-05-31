@@ -1,10 +1,12 @@
 package test
 
 import (
+	"GoSearch/app/controller"
 	"GoSearch/app/service"
 	"encoding/json"
-	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/mem"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -51,10 +53,12 @@ func TestSetAppConfig(t *testing.T) {
 
 func TestOS(t *testing.T) {
 	// 获取1000ms内的CPU信息，太短不准确，也可以获几秒内的，但这样会有延时，因为要等待
-	cc, _ := cpu.Percent(time.Millisecond*3000, true)
-	t.Log(cc)
-	cc, _ = cpu.Percent(time.Millisecond*3000, false)
-	t.Log(cc)
+	//cc, _ := cpu.Percent(time.Millisecond*3000, true)
+	//t.Log(cc)
+	//cc, _ = cpu.Percent(time.Millisecond*3000, false)
+	//t.Log(cc)
+	v, _ := mem.VirtualMemory()
+	t.Log(v.Total)
 }
 
 func TestDisk(t *testing.T) {
@@ -64,4 +68,100 @@ func TestDisk(t *testing.T) {
 		data, _ := json.MarshalIndent(useStat, "", " ")
 		t.Log(string(data))
 	}
+}
+
+// --- 全局变量或在测试设置中初始化的变量 ---
+var (
+	// allRealDirectoryPaths 应该在测试开始前被填充
+	// 例如，通过读取一个文件，或者扫描一个大的根目录来获取
+	allRealDirectoryPaths  []string
+	numBenchmarkPaths      = 100000 // 我们要进行10万次索引操作
+	generatedRandomIndices []int    // 存储生成的随机索引
+)
+
+// setupBenchmarkData 负责填充 allRealDirectoryPaths 和生成随机索引
+func setupBenchmarkData(tb testing.TB) {
+	if len(allRealDirectoryPaths) == 0 {
+		tb.Log("Setting up benchmark data: Populating allRealDirectoryPaths...")
+		// 【请务必替换为你的真实路径或有效的填充逻辑】
+		allRealDirectoryPaths = []string{
+			"D:",
+			"C:\\Windows",
+			"C:\\Program Files",
+			"D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin",
+			"D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\windows",
+			"D:\\Kits\\IDE\\CPP",
+			"D:\\Kits\\IDE\\FinalShell",
+			"D:\\Kits\\IDE\\FinalShell\\img",
+			"D:\\Kits\\IDE\\FinalShell\\sync",
+			"D:\\Overwatch",
+			"E:",
+			"E:\\Files",
+			"E:\\Images\\Photos",
+			"E:\\Images\\Photos\\GamePhotos",
+			"E:\\Images\\Photos\\风光",
+			"E:\\Images\\Photos\\风光\\香港人像",
+			"E:\\Need for Speed Heat",
+			"E:\\Need for Speed Heat\\downloadedData",
+			"E:\\Need for Speed Heat\\downloadedData\\screenshot",
+			"C:",
+			"C:\\Users\\muyu",
+			"C:\\Users\\muyu\\AppData",
+			"C:\\Users\\muyu\\AppData\\Roaming",
+			"C:\\Users\\muyu\\AppData\\Roaming\\tidalab",
+		}
+		// ---------------------------------------------------------------------
+
+		if len(allRealDirectoryPaths) == 0 {
+			tb.Fatal("allRealDirectoryPaths is empty. Please provide real directory paths for benchmarking.")
+		}
+		tb.Logf("Loaded %d real directory paths for benchmark.", len(allRealDirectoryPaths))
+	}
+
+	if len(generatedRandomIndices) != numBenchmarkPaths {
+		tb.Logf("Generating %d random indices...", numBenchmarkPaths)
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		generatedRandomIndices = make([]int, numBenchmarkPaths)
+		for i := 0; i < numBenchmarkPaths; i++ {
+			generatedRandomIndices[i] = r.Intn(len(allRealDirectoryPaths))
+		}
+		tb.Log("Random indices generated.")
+	}
+}
+
+// cache:20MB, 命中率:99.9% => 1009772400 ns/op  约等于 1.009 s/op
+// cache:1KB, 命中率：20.5% => 24043536100 ns/op 约等于 24.05 s/op
+// cache:5KB, 命中率：45.2% => 17077484400 ns/op 约等于 17.05 s/op
+func BenchmarkDir(b *testing.B) {
+	setupBenchmarkData(b)
+	b.N = 3
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dirController := controller.NewDirController()
+		for _, idx := range generatedRandomIndices {
+			dirController.IndexDir(allRealDirectoryPaths[idx])
+		}
+		//b.Log("命中率: ", float64(dirController.GetHitCnt())/100000.0)
+	}
+	b.StopTimer() // 暂停计时器，准备索引操作
+}
+
+// 27920599800 ns/op ≈ 27.9 s/op
+func BenchmarkDirWoCache(b *testing.B) {
+	setupBenchmarkData(b)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dirCnt := &service.DirContent{}
+		for _, idx := range generatedRandomIndices {
+			dirCnt.GetDirCnt(allRealDirectoryPaths[idx])
+		}
+	}
+	b.StopTimer() // 暂停计时器，准备索引操作
+}
+
+func TestIndexFile(t *testing.T) {
+	dirController := controller.NewDirController()
+	t.Log(dirController.IndexFile("D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin"))
+
+	t.Log(dirController.IndexFile("D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin\\GoSearch.exe"))
 }

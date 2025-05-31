@@ -1,9 +1,9 @@
-// frontend/src/components/SystemMonitor.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import './SystemMonitor.css'; // 新建 CSS 文件
 import { GetSystemInfo } from '../../wailsjs/go/controller/API';
 import {toast} from "react-toastify"; // 调整路径
+import {formatBytes} from "../assets/utils/utils.js"
 
 const UPDATE_INTERVAL = 1000; // 每秒更新一次
 
@@ -91,15 +91,15 @@ function SystemMonitor({ isOpen, onClose }) {
                     </div>
                     <div className="info-item">
                         <span className="label">{t('Used Memory')}:</span>
-                        <span className="value">{sysInfo.mem_used?.toLocaleString() || 0} MB</span>
+                        <span className="value">{sysInfo.mem_used > 0 ? formatBytes(sysInfo.mem_used):0}</span>
                     </div>
                     <div className="info-item">
                         <span className="label">{t('Free Memory')}:</span>
-                        <span className="value">{sysInfo.mem_free?.toLocaleString() || 0} MB</span>
+                        <span className="value">{sysInfo.mem_free > 0 ? formatBytes(sysInfo.mem_free):0}</span>
                     </div>
                     <div className="info-item">
                         <span className="label">{t('Total Memory')}:</span>
-                        <span className="value">{sysInfo.mem_all?.toLocaleString() || 0} MB</span>
+                        <span className="value">{sysInfo.mem_all > 0 ? formatBytes(sysInfo.mem_all):0}</span>
                     </div>
                 </div>
             ) : (

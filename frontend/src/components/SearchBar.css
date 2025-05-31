@@ -5,6 +5,64 @@
     align-items: center;
 }
 
+.app-header {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--header-bg-color);    /* 使用你的变量 */
+    color: var(--header-text-color);          /* 使用你的变量 */
+    box-shadow: var(--header-box-shadow);       /* 使用你的变量 */
+    /* border-bottom: 1px solid var(--border-primary);  如果你有 --border-primary */
+    z-index: 10;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header-logo {
+    width: 30px;
+    height: 30px;
+    /* 如果是 SVG，考虑 fill: currentColor; */
+}
+
+.logo-area {
+    display: flex;
+    align-items: center; /* 确保 logo 和 title 垂直居中 */
+    flex-shrink: 0;
+}
+
+.app-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    /* color 已从 .app-header 继承，或直接使用 var(--header-text-color) */
+    margin-left: 0.5rem; /* 在 logo 和 title 之间加点间距 */
+}
+
+.search-area {
+    flex-grow: 1;
+    margin: 0 1.5rem;
+    max-width: 700px;
+}
+/* 通用头部操作按钮样式 */
+.header-action-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--header-text-color, var(--app-text-color));
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: 0.25rem; /* 按钮之间的间距 */
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    line-height: 1;
+}
+.header-action-btn:hover {
+    background-color: var(--bg-tertiary, #e0e0e0);
+}
+.header-action-btn:first-child {
+    margin-left: 0; /* 第一个按钮不需要左边距 */
+}
+
 .search-input-wrapper {
     position: relative;
     flex-grow: 1;
@@ -75,6 +133,32 @@
     cursor: not-allowed;
 }
 
+.settings-action-area {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.theme-toggle-btn,
+.system-monitor-toggle-btn,
+.settings-btn{ /* 新增的主题切换按钮样式 */
+    background: none;
+    border: none;
+    font-size: 1.5rem; /* 图标大小 */
+    color: var(--header-text-color, var(--app-text-color)); /* 继承头部文字颜色 */
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 0.5rem; /* 和设置按钮的间距 */
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.theme-toggle-btn:hover,
+.system-monitor-toggle-btn:hover,
+.settings-btn:hover{
+    background-color: var(--bg-tertiary, #e0e0e0); /* 使用一个通用的悬停背景色变量 */
+}
 /* Spinner 样式可以保持不变，因为它使用的是内联的 rgba 和 #fff，
    或者你也可以为 spinner 定义专门的变量，如 --spinner-track-color 和 --spinner-color */
 .spinner {
@@ -87,13 +171,6 @@
     animation: spin 1s ease-in-out infinite;
     -webkit-animation: spin 1s ease-in-out infinite;
 }
-/* 如果按钮文字颜色会变，spinner 颜色也需要用变量 */
-/*
-.dark-theme .search-submit-btn .spinner {
-    border: 2px solid var(--spinner-border-dark, rgba(0, 0, 0, 0.3));
-    border-top-color: var(--spinner-top-dark, #000);
-}
-*/
 
 
 @keyframes spin {

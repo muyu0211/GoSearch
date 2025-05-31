@@ -64,3 +64,8 @@ func StoreConfig(path string, data []byte) error {
 	}
 	return nil
 }
+
+// IsPath TODO:
+func IsPath(fileName string) bool {
+	return false
+}

@@ -5,7 +5,7 @@ import './Settings.css';
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import {toast} from "react-toastify";
 import {
-    GetInitialDir,
+    // GetInitialDir,
     OpenDirectory,
 } from '../../wailsjs/go/controller/DirController';
 import {GetAppConfig, GetBootConfig, SetAppConfig, SetBootConfig} from '../../wailsjs/go/controller/API';
@@ -88,7 +88,7 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
                 // 重新获取数据以更新UI
                 const appConf = await GetAppConfig();
                 const bootConf = await GetBootConfig();
-                const dirs = await GetInitialDir();
+                // const dirs = await GetInitialDir();
                 // setAppConfig(appConf || {});
                 // setBootConfig(bootConf || {});
                 // setDirectories(dirs || []);
