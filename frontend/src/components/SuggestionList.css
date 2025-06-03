@@ -1,0 +1,38 @@
+/* frontend/src/components/SuggestionList.css */
+.suggestion-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 100%; /* 在输入框正下方 */
+    left: 0;
+    right: 0; /* 占据输入框的整个宽度 */
+    background-color: var(--input-bg-color, #fff); /* 使用输入框背景或卡片背景 */
+    border: 1px solid var(--input-border-color, #ccc);
+    border-top: none; /* 通常顶部边框与输入框底部边框重合或不需要 */
+    border-radius: 0 0 4px 4px; /* 底部圆角 */
+    box-shadow: 0 4px 6px var(--shadow-primary, rgba(0, 0, 0, 0.1));
+    z-index: 500; /* 确保在其他元素之上 */
+    max-height: 200px; /* 限制最大高度，出现滚动条 */
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: var(--app-text-color);
+    border-bottom: 1px solid var(--border-primary, #eee); /* 可选的项分隔线 */
+}
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: var(--results-item-hover-bg-color, #f0f0f0);
+}
+
+.suggestion-item.active {
+    background-color: var(--settings-accent-color, #007bff); /* 高亮项背景 */
+    color: var(--button-text-color, white); /* 高亮项文字 */
+}

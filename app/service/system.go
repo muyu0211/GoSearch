@@ -46,12 +46,12 @@ func GetSysInfoInstance() *SystemInfo {
 		sysInfo.UpdateMemInfo()
 		sysInfo.UpdateCpuInfo()
 		sysInfo.UpdateGpuInfo()
+		if sysInfo.OS == utils.WINDOWS {
+			utils.SEGMENT = "\\"
+		} else {
+			utils.SEGMENT = "/"
+		}
 	})
-	if sysInfo.OS == utils.WINDOWS {
-		utils.SEGMENT = "\\"
-	} else {
-		utils.SEGMENT = "/"
-	}
 	return sysInfo
 }
 

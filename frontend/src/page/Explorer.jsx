@@ -1,11 +1,11 @@
-// frontend/src/components/DiskExplorer.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import './Explorer.css'; // 新建 CSS 文件
+import './Explorer.css';
 import { GetDiskInfo, IndexDir } from '../../wailsjs/go/controller/DirController';
 import ToolBar from "../components/ToolBar.jsx";
 import {formatBytes, formatDate, getParentPath} from "../assets/utils/utils.js"
+import RightClickModel from "../components/RightClickModel.jsx";
 
 const REFRESH_INTERVAL = 10000; // 每 10 秒刷新一次
 
@@ -13,13 +13,17 @@ function Explorer() {
     const { t } = useTranslation();
     const [currentPath, setCurrentPath] = useState(''); // 空路径表示顶级磁盘视图
     const [historyPath, setHistoryPath] = useState([]);
-    const [currentItems, setCurrentItems] = useState({ files: [], sub_dirs: [] }); // 用于文件和子文件夹
+    const [currentItems, setCurrentItems] = useState({ files: [], sub_dirs: [] });
     const [disksInfo, setDisksInfo] = useState([]); // 用于顶级驱动器
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState('drives'); // 'drives' 或 'files'
+    // --- ContextMenu 相关的 State ---
+    const [rightClickModelVisible, setRightClickModelVisible] = useState(false);
+    const [rightClickModelPosition, setRightClickModelPosition] = useState({ x: 0, y: 0 });
+    const [rightClickModelItem, setRightClickModelItem] = useState(null); // 当前右键点击的项目
 
     // 加载数据的主要函数(接收参数：文件夹绝对路径path)
-    const loadData = useCallback(async (path) => {
+    const loadData = useCallback(async (path, useCache=true) => {
         setIsLoading(true);
         try {
             if (!path || path === '/') { // 根路径或空路径视为顶级磁盘视图
@@ -30,13 +34,15 @@ function Explorer() {
                 setHistoryPath([]); // 回到顶级时清空历史
                 setViewMode('drives');
             } else {
-                const dirContent = await IndexDir(path);
+                const dirContent = await IndexDir(path, useCache);
+                const filesArray = dirContent.files ? Object.values(dirContent.files) : [];
+                const subDirsArray = dirContent.sub_dirs ? Object.values(dirContent.sub_dirs) : [];
                 if (dirContent) {
                     setCurrentItems({
-                        files: dirContent.files || [],
-                        sub_dirs: dirContent.sub_dirs || [], // 确保后端字段名一致
+                        files: filesArray,
+                        sub_dirs: subDirsArray,
                     });
-                    setCurrentPath(dirContent.path || path); // 使用后端返回的规范化路径
+                    setCurrentPath(dirContent.path || path);
                     setDisksInfo([]);
                     setViewMode('files');
                 } else {
@@ -50,6 +56,10 @@ function Explorer() {
             setIsLoading(false);
         }
     }, [t]);
+
+    const loadDataNoCache =  useCallback(async (path) => {
+        await loadData(path, false)
+    },[t]);
 
     // 组件首次加载时，加载顶级驱动器
     useEffect(() => {
@@ -88,10 +98,17 @@ function Explorer() {
         }
     };
 
-    const handleItemRightClick = (item) => {
-        // TODO: 右键事件
-        toast(item.path)
+    const handleItemRightClick = (event, item) => {
+        event.preventDefault(); // 阻止浏览器默认右键菜单
+        setRightClickModelItem(item);
+        setRightClickModelPosition({ x: event.clientX, y: event.clientY });
+        setRightClickModelVisible(true);
     }
+
+    const closeContextMenu = () => {
+        setRightClickModelVisible(false);
+        setRightClickModelItem(null);
+    };
 
     const navigateBack = () => {
         if (historyPath.length > 0) {
@@ -182,7 +199,7 @@ function Explorer() {
                             <li
                                 key={item.path}
                                 onDoubleClick={() => handleItemClick(item)}
-                                onContextMenu={() => handleItemRightClick(item)}
+                                onContextMenu={(e) => handleItemRightClick(e, item)}
                                 className="explorer-item"
                                 tabIndex={0}    // 可以添加 tabIndex 使其可被键盘聚焦，并用 onKeyDown 处理 Enter 键作为进入
                                 onKeyDown={(e) => {
@@ -211,17 +228,25 @@ function Explorer() {
     return (
         <div className="file-explorer-page-container">
             <div className="file-explorer-container">
-                {/*{renderToolbar()}*/}
                 <ToolBar
                     currentPath={currentPath}
                     historyPath={historyPath}
-                    currentItems={currentItems}
+                    subDirs={currentItems.sub_dirs}
                     onPathSubmit={loadData}
                     onGoBack={navigateBack}
                     onSearchFile={handleSearchFile}
+                    onRefresh={loadDataNoCache}
                 />
                 {viewMode === 'drives' ? renderDrivesView() : renderFileListView()}
             </div>
+            <RightClickModel
+                item={rightClickModelItem}
+                isVisible={rightClickModelVisible}
+                position={rightClickModelPosition}
+                onDoubleClick={handleItemClick}
+                onClose={closeContextMenu}
+                loadData={loadData}
+            />
         </div>
     );
 }

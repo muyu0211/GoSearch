@@ -11,7 +11,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText
     }
 
     return (
-        <div className="confirm-modal-overlay">
+        <div className="confirm-modal-overlay" onMouseDown={(e) => e.stopPropagation()}>
             <div className="confirm-modal-content">
                 <h3 className="confirm-modal-title">{title || t('Confirm Action')}</h3>
                 <p className="confirm-modal-message">{message || t('Are you sure you want to proceed?')}</p>

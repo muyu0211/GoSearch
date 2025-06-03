@@ -6,7 +6,7 @@ import { GetRetrieveDes } from '../../wailsjs/go/controller/DirController';
 import {toast} from "react-toastify";
 import {isWindows} from "react-device-detect";
 
-function ToolBar({ currentPath, historyPath, currentItems, onPathSubmit, onGoBack, onSearchFile }) {
+function ToolBar({ currentPath, historyPath, onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
     const { t } = useTranslation();
     const [isEditingPath, setIsEditingPath] = useState(false);      // 是否正在编辑
     const [editablePath, setEditablePath] = useState('');            // 修改后的内容
@@ -98,9 +98,8 @@ function ToolBar({ currentPath, historyPath, currentItems, onPathSubmit, onGoBac
     const handleNavigateFromBreadcrumb = async (newPath) => {
         try {
             await onPathSubmit(newPath);
-            // 等待父组件的路径提交和数据加载完成
-            // 只有在 onPathSubmit 成功完成后，才退出编辑模式
-            // 此时父组件的 currentPath state 应该已经更新了
+            // TODO:考虑删除pathHistory中前面的路径
+            console.log(historyPath)
         } catch (error) {
             // 如果 onPathSubmit 抛出错误，也应该处理一下编辑状态
             console.error("Error during path submission from breadcrumb:", error);
@@ -149,7 +148,7 @@ function ToolBar({ currentPath, historyPath, currentItems, onPathSubmit, onGoBac
                 )}
             </div>
             <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn">📑</button>
-            <button onClick={() => onPathSubmit(currentPath)} title={t('Refresh')} className="refreshBtn">🔄</button>
+            <button onClick={() => onRefresh(currentPath)} title={t('Refresh')} className="refreshBtn">🔄</button>
         </div>
     );
 }

@@ -1,0 +1,45 @@
+/* frontend/src/components/ContextMenu.css */
+.context-menu {
+    position: fixed; /* 使用 fixed 定位，相对于视口 */
+    background-color: var(--settings-section-bg-color, var(--bg-secondary)); /* 使用设置区域或卡片背景色 */
+    color: var(--settings-text-color, var(--app-text-color));
+    border: 1px solid var(--settings-border-color, var(--border-primary));
+    border-radius: 6px;
+    box-shadow: 0 3px 10px var(--shadow-primary, rgba(0, 0, 0, 0.15));
+    padding: 0.5rem 0; /* 上下内边距 */
+    z-index: 1000; /* 确保在最上层 */
+    min-width: 180px; /* 菜单最小宽度 */
+    animation: fadeInContextMenu 0.15s ease-out;
+}
+
+@keyframes fadeInContextMenu {
+    from { opacity: 0; transform: scale(0.98) translateY(-5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.context-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.context-menu li {
+    padding: 0.6rem 1rem;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.context-menu li:hover {
+    background-color: var(--settings-accent-color, var(--button-bg-color));
+    color: var(--button-text-color, white);
+}
+
+/* 可以为分隔线添加样式 (如果需要) */
+/* .context-menu li.separator {
+    height: 1px;
+    background-color: var(--settings-border-color, var(--border-primary));
+    margin: 0.3rem 0;
+    padding: 0;
+} */

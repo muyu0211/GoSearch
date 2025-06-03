@@ -1,0 +1,126 @@
+/* frontend/src/components/RenameModal.css */
+.rename-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1010; /* 比 ContextMenu 更高，如果它们可能同时出现 */
+    padding: 1rem;
+}
+
+.rename-modal-content {
+    background-color: var(--settings-bg-color);
+    color: var(--settings-text-color);
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 450px;
+    animation: fadeInModal 0.3s ease-out; /* 复用 ContextMenu 的动画 */
+}
+
+.rename-modal-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--settings-header-color);
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.rename-modal-current-name {
+    font-size: 0.9em;
+    color: var(--settings-text-secondary-color);
+    margin-bottom: 1.5rem;
+    word-break: break-all; /* 如果当前名称很长 */
+}
+.rename-modal-current-name strong {
+    color: var(--settings-text-color);
+}
+
+
+.rename-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.rename-label {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--settings-text-secondary-color);
+}
+
+.rename-input-field {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 1em;
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color, var(--app-text-color));
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.rename-input-field:focus {
+    outline: none;
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 0 0.1rem var(--input-focus-border-color, rgba(0, 123, 255, 0.25));
+}
+
+/*.rename-input-field.input-error {*/
+/*    border-color: var(--toastify-color-error, #e74c3c); !* 使用错误颜色变量 *!*/
+/*}*/
+
+.rename-error-message {
+    font-size: 0.85em;
+    color: var(--toastify-color-error, #e74c3c);
+    margin-top: 0.5rem;
+}
+
+
+.rename-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.rename-modal-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.rename-modal-btn.confirm {
+    background-color: var(--settings-accent-color);
+    color: var(--button-text-color, white);
+    border-color: var(--settings-accent-color);
+}
+.rename-modal-btn.confirm:hover:not(:disabled) {
+    opacity: 0.85;
+}
+.rename-modal-btn.confirm:disabled {
+    background-color: var(--bg-disabled, #ccc);
+    border-color: var(--bg-disabled, #ccc);
+    color: var(--text-disabled, #888);
+    cursor: not-allowed;
+}
+
+.rename-modal-btn.cancel {
+    background-color: var(--settings-button-bg-color);
+    color: var(--settings-button-text-color);
+    border: 1px solid var(--settings-border-color);
+}
+.rename-modal-btn.cancel:hover:not(:disabled) {
+    background-color: var(--settings-button-hover-bg-color);
+}
+.rename-modal-btn.cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

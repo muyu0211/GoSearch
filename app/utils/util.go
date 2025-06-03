@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 /*
@@ -68,4 +69,14 @@ func StoreConfig(path string, data []byte) error {
 // IsPath TODO:
 func IsPath(fileName string) bool {
 	return false
+}
+
+func GetParentPath(os string, path string) (string, string) {
+	idx := 0
+	if os == WINDOWS {
+		idx = strings.LastIndex(path, "\\")
+	} else {
+		idx = strings.LastIndex(path, "/")
+	}
+	return path[:idx], path[idx+1:]
 }

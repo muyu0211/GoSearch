@@ -40,6 +40,7 @@ export namespace service {
 	    // Go type: time
 	    mod_time: any;
 	    mode: number;
+	    IsModified: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new FileSystemEntry(source);
@@ -53,6 +54,7 @@ export namespace service {
 	        this.size = source["size"];
 	        this.mod_time = this.convertValues(source["mod_time"], null);
 	        this.mode = source["mode"];
+	        this.IsModified = source["IsModified"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -75,12 +77,15 @@ export namespace service {
 	}
 	export class DirContent {
 	    path: string;
-	    files: FileSystemEntry[];
-	    sub_dirs: FileSystemEntry[];
+	    files: Record<string, FileSystemEntry>;
+	    sub_dirs: Record<string, FileSystemEntry>;
 	    error?: any;
 	    Size: number;
 	    // Go type: time
 	    LastIndex: any;
+	    // Go type: time
+	    ExpiredTime: any;
+	    IsModified: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new DirContent(source);
@@ -89,11 +94,13 @@ export namespace service {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
-	        this.files = this.convertValues(source["files"], FileSystemEntry);
-	        this.sub_dirs = this.convertValues(source["sub_dirs"], FileSystemEntry);
+	        this.files = this.convertValues(source["files"], FileSystemEntry, true);
+	        this.sub_dirs = this.convertValues(source["sub_dirs"], FileSystemEntry, true);
 	        this.error = source["error"];
 	        this.Size = source["Size"];
 	        this.LastIndex = this.convertValues(source["LastIndex"], null);
+	        this.ExpiredTime = this.convertValues(source["ExpiredTime"], null);
+	        this.IsModified = source["IsModified"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

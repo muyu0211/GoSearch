@@ -119,6 +119,27 @@ const resources = {
             "Click to edit path": "Click to edit path",
             "Current path, editable": "Current path, editable",
             "Retrieve Description": "Retrieve Description",
+            "Open": "Open",
+            "Copy Path": "Copy Path",
+            "Rename": "Rename",
+            "Delete": "Delete",
+            "Copy File": "Copy File",
+            "Properties": "Properties",
+            "Path copied to clipboard!": "Path copied to clipboard!",
+            "'Failed to copy path.": "'Failed to copy path.",
+
+            "Name cannot be empty.": "Name cannot be empty.",
+            "Failed to rename item. Please try again.": "Failed to rename item. Please try again.",
+            "Current name": "Current name",
+            "New name": "New name",
+            "Renaming": "Renaming",
+            "Renamed successfully!": "Renamed successfully!",
+
+            "Confirm Delete": "Confirm Delete",
+            "Are you sure you want to delete this {{itemName}}?": "Are you sure you want to delete this {{itemName}}?",
+            "Delete successfully!": "Delete successfully!",
+            "dir": "dir",
+            "file": "file"
         }
     },
     zh: { // 中文翻译
@@ -224,7 +245,28 @@ const resources = {
 
             "Click to edit path": "点击编辑",
             "Current path, editable": "当前路径",
-            "Retrieve Description": "查看检索说明"
+            "Retrieve Description": "查看检索说明",
+            "Open": "打开",
+            "Copy Path": "复制路径",
+            "Rename": "重命名",
+            "Delete": "删除",
+            "Copy File": "复制文件",
+            "Properties": "属性",
+            "Path copied to clipboard!": "路径复制成功",
+            "'Failed to copy path.": "复制失败",
+
+            "Name cannot be empty.": "名字不能为空",
+            "Failed to rename item. Please try again.": "重命名失败, 请重试",
+            "Current name": "当前名字",
+            "New name": "新名字",
+            "Renaming": "重命名中",
+            "Renamed successfully!": "重命名成功!",
+
+            "Confirm Delete": "确认删除",
+            "Are you sure you want to delete this {{itemName}}?": "确认删除{{itemName}}?",
+            "Delete successfully!": "删除成功!",
+            "dir": "文件夹",
+            "file": "文件"
         }
     }
 };

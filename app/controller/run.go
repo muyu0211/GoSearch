@@ -43,6 +43,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 			if err = service.AppConf.ChangeAppConfig(); err != nil {
 				log.Printf("Shutdown error: %v", err.Error())
 			}
+			dirController.pathCache.StopJanitor()
 			fmt.Println("GoSearch Shutdown!!!")
 		},
 		Bind: []interface{}{

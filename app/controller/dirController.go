@@ -2,7 +2,9 @@ package controller
 
 import (
 	"GoSearch/app/service"
+	"GoSearch/app/utils"
 	"errors"
+	"fmt"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
@@ -85,7 +87,7 @@ func (d *DirController) GetDiskInfo() ([]service.Disk, error) {
 }
 
 // IndexDir 获取当前路径下的文件和文件夹
-func (d *DirController) IndexDir(dirPath string) (*service.DirContent, error) {
+func (d *DirController) IndexDir(dirPath string, useCache bool) (*service.DirContent, error) {
 	// 查找cache是否命中
 	var (
 		dirCnt *service.DirContent
@@ -93,12 +95,13 @@ func (d *DirController) IndexDir(dirPath string) (*service.DirContent, error) {
 		err    error
 	)
 
-	// Cache命中
-	if dirCnt, ok = d.pathCache.Get(dirPath); ok {
-		//log.Printf("cache命中")
-		return dirCnt, err
+	if useCache {
+		// Cache命中
+		if dirCnt, ok = d.pathCache.Get(dirPath); ok {
+			log.Printf("cache命中")
+			return dirCnt, err
+		}
 	}
-	// cache未命中, 则手动查找，之后再放入cache
 	dirCnt = service.NewDirContent()
 	if err = dirCnt.GetDirCnt(dirPath); err != nil {
 		log.Printf("Get Directory Content Error: %v", err)
@@ -108,6 +111,7 @@ func (d *DirController) IndexDir(dirPath string) (*service.DirContent, error) {
 		log.Printf("Cache put error: %v", err)
 		return nil, err
 	}
+
 	return dirCnt, nil
 }
 
@@ -140,7 +144,7 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 
 // GetSearchInput 处理用户搜索框输入
 func (d *DirController) GetSearchInput(target string, currDirPath string) ([]*service.FileSystemEntry, error) {
-	// 解析用户输入: 当用户输入的不是绝对路径时会调用该函数
+	// TODO: 解析用户输入: 当用户输入的不是绝对路径时会调用该函数
 	return nil, nil
 }
 
@@ -153,12 +157,49 @@ func (d *DirController) GetRetrieveDes() (string, error) {
 	})
 }
 
-// CreateDir TODO: 创建文件夹
-func (d *DirController) CreateDir(dirPath string, dirName string) error {
+// CreateItem TODO: 创建文件夹/文件
+func (d *DirController) CreateItem(dirPath string, dirName string) error {
 	return nil
 }
 
-// CreateFile TODO: 创建文件
-func (d *DirController) CreateFile(dirPath string, fileName string) error {
+// RenameItem 重命名文件夹/文件
+func (d *DirController) RenameItem(path string, newName string) error {
+	if path == "" {
+		return fmt.Errorf("path is null")
+	}
+	var (
+		sysInfo *service.SystemInfo
+		dirPath string
+		dirCnt  *service.DirContent
+		err     error
+	)
+	sysInfo = service.GetSysInfoInstance()
+	dirPath, _ = utils.GetParentPath(sysInfo.OS, path)
+
+	// 为了防止数据不一致性, 直接从cache中删除父文件夹条目
+	dirCnt = d.pathCache.Remove(dirPath)
+	if err = dirCnt.RenameItem(path, dirPath, newName); err != nil {
+		log.Printf("RenameItem error: %v", err)
+		return err
+	}
+	return nil
+}
+
+// DeleteItem 删除文件夹/文件
+func (d *DirController) DeleteItem(path string) error {
+	if path == "" {
+		return fmt.Errorf("path is null")
+	}
+	var (
+		sysInfo = service.GetSysInfoInstance()
+		dirPath string
+		dirCnt  *service.DirContent
+		err     error
+	)
+	dirPath, _ = utils.GetParentPath(sysInfo.OS, path)
+	dirCnt = d.pathCache.Remove(dirPath)
+	if err = dirCnt.DeleteItem(path); err != nil {
+		return err
+	}
 	return nil
 }

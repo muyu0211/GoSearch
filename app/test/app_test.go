@@ -139,7 +139,7 @@ func BenchmarkDir(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		dirController := controller.NewDirController()
 		for _, idx := range generatedRandomIndices {
-			dirController.IndexDir(allRealDirectoryPaths[idx])
+			dirController.IndexDir(allRealDirectoryPaths[idx], false)
 		}
 		//b.Log("命中率: ", float64(dirController.GetHitCnt())/100000.0)
 	}
@@ -164,4 +164,9 @@ func TestIndexFile(t *testing.T) {
 	t.Log(dirController.IndexFile("D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin"))
 
 	t.Log(dirController.IndexFile("D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin\\GoSearch.exe"))
+}
+
+func TestRename(t *testing.T) {
+	dirController := controller.NewDirController()
+	dirController.RenameItem("E:\\Tools\\SetUp\\test\\test", "test-test")
 }
