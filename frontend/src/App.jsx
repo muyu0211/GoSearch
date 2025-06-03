@@ -17,10 +17,7 @@ function AppContent() {
     const { t, i18n } = useTranslation(); // 获取翻译函数
     const { currentPage, navigateTo } = useNavigation();
     const [initialAppConfig, setInitialAppConfig] = useState(null); // 存储从后端加载的完整配置
-    const [currentQuery, setCurrentQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-        // --- 主题状态管理 ---
     const [theme, setTheme] = useState(() => localStorage.getItem('appTheme') || 'light');
 
     // 从后端获取数据
@@ -65,7 +62,7 @@ function AppContent() {
         setTheme(newTheme);
         try {
             let configToSave = {
-                ...(initialAppConfig || {}), // 基于初始加载的配置
+                ...(initialAppConfig || {}), 
                 theme: newTheme,
             };
 

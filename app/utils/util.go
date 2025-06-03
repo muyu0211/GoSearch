@@ -66,11 +66,6 @@ func StoreConfig(path string, data []byte) error {
 	return nil
 }
 
-// IsPath TODO:
-func IsPath(fileName string) bool {
-	return false
-}
-
 func GetParentPath(os string, path string) (string, string) {
 	idx := 0
 	if os == WINDOWS {

@@ -1,5 +1,5 @@
 // frontend/src/components/BreadcrumbDisplay.jsx
-import React, {useEffect} from 'react';
+import React from 'react';
 import {isWindows} from 'react-device-detect';
 import { useTranslation } from 'react-i18next';
 import './BreadcrumbDisplay.css'; // 为面包屑创建 CSS 文件

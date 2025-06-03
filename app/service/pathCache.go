@@ -9,9 +9,9 @@ import (
 
 var (
 	pathCacheOnce sync.Once
-	ExpiredTime   time.Duration = 5 * time.Minute // 设置cache30秒过期
-	JanitorTime                 = 30 * time.Second
-	CacheRatio                  = 0.3
+	ExpiredTime   = 5 * time.Minute // 设置cache30秒过期
+	JanitorTime   = 30 * time.Second
+	CacheRatio    = 0.3
 )
 
 type PathCache struct {

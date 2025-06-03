@@ -98,8 +98,10 @@ function ToolBar({ currentPath, historyPath, onPathSubmit, onGoBack, onSearchFil
     const handleNavigateFromBreadcrumb = async (newPath) => {
         try {
             await onPathSubmit(newPath);
-            // TODO:考虑删除pathHistory中前面的路径
-            console.log(historyPath)
+            const index = historyPath.indexOf(newPath);
+            if (index >= 0) {
+                historyPath.splice(index);
+            }
         } catch (error) {
             // 如果 onPathSubmit 抛出错误，也应该处理一下编辑状态
             console.error("Error during path submission from breadcrumb:", error);

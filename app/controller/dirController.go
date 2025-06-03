@@ -142,10 +142,23 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 	}, nil
 }
 
-// GetSearchInput 处理用户搜索框输入
-func (d *DirController) GetSearchInput(target string, currDirPath string) ([]*service.FileSystemEntry, error) {
-	// TODO: 解析用户输入: 当用户输入的不是绝对路径时会调用该函数
-	return nil, nil
+// SearchItemFromInput 处理用户搜索框输入
+func (d *DirController) SearchItemFromInput(targetInput string, currDirPath string) ([]*service.FileSystemEntry, error) {
+	var (
+		searchParams = service.ParseParams(targetInput, currDirPath)
+		items        []*service.FileSystemEntry
+		err          error
+	)
+	if currDirPath == "" {
+		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
+	}
+
+	if items, err = service.SearchItems(searchParams); err != nil {
+		return nil, err
+	}
+
+	// TODO: check结果是否与查询要求相符
+	return items, nil
 }
 
 // GetRetrieveDes 文件检索说明

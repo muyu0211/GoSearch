@@ -1,11 +1,9 @@
-// frontend/src/components/SettingsPage.jsx
 import React, {useState, useEffect, useCallback} from 'react';
 import { useTranslation } from 'react-i18next';
 import './Settings.css';
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import {toast} from "react-toastify";
 import {
-    // GetInitialDir,
     OpenDirectory,
 } from '../../wailsjs/go/controller/DirController';
 import {GetAppConfig, GetBootConfig, SetAppConfig, SetBootConfig} from '../../wailsjs/go/controller/API';
@@ -26,10 +24,9 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
     const fetchPageData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [appConf, bootConf, dirs] = await Promise.all([
+            const [appConf, bootConf] = await Promise.all([
                 GetAppConfig(),
                 GetBootConfig(),
-                // GetInitialDir(),
             ]);
             setAppConfig(appConf || {});
             setBootConfig(bootConf || {});

@@ -1,18 +1,14 @@
-// frontend/src/components/SearchBar.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import './SearchBar.css';
 import GoSearch_logo from "../assets/images/GoSearch.svg";
-import {SetAppConfig} from "../../wailsjs/go/controller/API.js";
-import {toast} from "react-toastify";
 import {useTranslation} from "react-i18next";
 import SystemMonitor from "./SystemMonitor.jsx"; // 为 SearchBar 创建一个 CSS 文件
 import { useNavigation } from '../context/NavigationContext'; // 导入 useNavigation
 
-function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
+function SearchBar({ currentTheme, onChangeTheme }) {
     const { t, i18n } = useTranslation(); // 获取翻译函数
     const { currentPage, navigateTo } = useNavigation(); // 使用 Context
-    const inputRef = useRef(null); // 用于聚焦输入框
-    const [inputValue, setInputValue] = useState();
+    useRef(null);
     const [showSystemMonitor, setShowSystemMonitor] = useState(false); // 控制监控弹窗
     const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
 
@@ -30,38 +26,6 @@ function SearchBar({ currentTheme, onChangeTheme, isLoading}) {
         }
         localStorage.setItem('appLanguage', currentLanguage);
     }, [currentLanguage, i18n]);
-
-    // 允许用户按 Enter 键提交表单
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (isLoading) return; // 防止在加载时重复提交
-
-        const query = inputValue.trim();
-        if (!query) {
-            // 可以选择在这里提示用户输入内容，或者让 onSearch 处理空查询
-            onSearch(""); // 或者 onSearch(null) 等，根据你的 App.jsx 逻辑
-            return;
-        }
-
-        // 非常简单的关键词检测，判断是否可能是一个“自然语言”查询
-        // 实际应用中，这个判断逻辑可能更复杂，或者由用户通过特定按钮触发
-        const nlKeywords = ['last week', 'yesterday', 'today', 'greater than', 'less than', 'images', 'documents', 'videos', 'audio', 'code', 'type:', 'size:', 'date:'];
-        const isLikelyNL = nlKeywords.some(keyword => inputValue.toLowerCase().includes(keyword));
-
-        if (isLikelyNL && onNaturalSearch) {
-            onNaturalSearch(inputValue);
-        } else {
-            onSearch(inputValue);
-        }
-    };
-
-    // 清除输入框内容
-    const handleClearInput = () => {
-        setInputValue('');
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
-    };
 
     // 打开系统监视器
     const toggleSystemMonitor = () => {

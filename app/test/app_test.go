@@ -7,6 +7,7 @@ import (
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 )
@@ -167,6 +168,6 @@ func TestIndexFile(t *testing.T) {
 }
 
 func TestRename(t *testing.T) {
-	dirController := controller.NewDirController()
-	dirController.RenameItem("E:\\Tools\\SetUp\\test\\test", "test-test")
+	str := strings.ToLower("你好Hh")
+	t.Log(str)
 }

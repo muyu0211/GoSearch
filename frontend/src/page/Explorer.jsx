@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import './Explorer.css';
@@ -67,17 +67,17 @@ function Explorer() {
     }, [loadData]);
 
     // TODO: 处理输入框检索文件
-    const handleSearchFile = (currentPath, targetFileName) => {
-        // 不为绝对路径时全权交由后端判断
+    const handleSearchFile = async (currentPath, targetItemName) => {
         console.log("curr:", currentPath)
-        console.log("newPath:", targetFileName)
+        console.log("newPath:", targetItemName)
+        await SearchItemFromInput(targetItemName, currentPath)
     }
 
     const handleDiskClick = (item) => {
         if (item.device !== "") { // 驱动器
             if (currentPath !== item.device) { // 防止重复加载同一路径
                 loadData(item.device); // 加载新路径
-                setHistoryPath(prev => [...prev, currentPath]); // 将当前路径加入历史
+                // setHistoryPath(prev => [...prev, currentPath]); // 将当前路径加入历史
             }
         } else { // 文件
             toast.info("Disk preview/action not yet implemented.");
@@ -93,7 +93,8 @@ function Explorer() {
                     setHistoryPath(prev => [...prev, currentPath]);
                 }
             }
-        } else if (!item.is_dir) { // 文件
+        } else if (!item.is_dir) {
+            // TODO: 双击打开
             toast.info("This is a file.");
         }
     };
