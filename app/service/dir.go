@@ -38,21 +38,6 @@ type DirContent struct {
 	next, pre   *DirContent // 双向链表
 }
 
-type SearchParams struct {
-	BaseDir         string // 要搜索的基础目录
-	SearchTerm      string // 原始或处理后的搜索词 (用于文件名/内容匹配)
-	TargetName      string // 如果明确是搜特定名称
-	IsFileName      bool   // 标记是否明确搜索文件名
-	IsDirectoryName bool   // 标记是否明确搜索目录名
-	GlobPattern     string // 通配符模式
-	FileType        string // 如 "document", "image", "txt"
-	MinSize         int64
-	MaxSize         int64
-	ModifiedAfter   time.Time
-	ModifiedBefore  time.Time
-	SearchContent   bool // 是否搜索文件内容 (如果支持) Recursive bool // 是否递归搜索子目录 (通常默认为 true)
-}
-
 func NewDirContent() *DirContent {
 	return &DirContent{}
 }
@@ -109,28 +94,6 @@ func (dirCnt *DirContent) GetDirCnt(dirPath string) error {
 	dirCnt.LastIndex = time.Now()
 	dirCnt.Size = dirCnt.getSize()
 	return nil
-}
-
-// SearchItems 并发搜索文件
-func SearchItems(searchParams SearchParams) ([]*FileSystemEntry, error) {
-	// TODO:
-	return nil, nil
-}
-
-// ParseParams 解析用户搜索参数
-func ParseParams(input, currDirPath string) SearchParams {
-	searchParams := SearchParams{
-		BaseDir:    currDirPath,
-		SearchTerm: strings.ToLower(input), // 忽略大小写
-	}
-	// TODO:
-	// 用户可进行的输入
-	// 1. type: [item类型]
-	// 2. size: [xxKB(kb) xxMB(mb)]
-	// 3. date: 前端添加日期选择框传入
-	// 4. 不包含以上特判字符串时, 认为用户输入的为item名字
-
-	return searchParams
 }
 
 func (dirCnt *DirContent) RenameItem(path, parentPath, newName string) error {

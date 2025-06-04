@@ -7,7 +7,8 @@ import (
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"math/rand"
-	"strings"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -167,7 +168,70 @@ func TestIndexFile(t *testing.T) {
 	t.Log(dirController.IndexFile("D:\\Kits\\IDE\\GoCode\\workspace\\GoSearch\\build\\bin\\GoSearch.exe"))
 }
 
-func TestRename(t *testing.T) {
-	str := strings.ToLower("你好Hh")
-	t.Log(str)
+func TestParseParams(t *testing.T) {
+	//input := "size: >1k <=10m type: txt .doc .xlsx name: myWord"
+	input := "myWord"
+	currPath := "E:"
+	params, err := service.ParseParams(input, currPath)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	t.Log(params)
+}
+
+func TestDirWalk(t *testing.T) {
+	start := time.Now()
+	BaseDir := "D:\\"
+	//BaseDir := "E:\\Tools\\SetUp"
+	cnt := 0
+
+	filepath.WalkDir(BaseDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if d.IsDir() {
+			cnt++
+		}
+		return nil
+	})
+	t.Logf("WalkDir遍历%d个文件夹, 耗时: %v", cnt, time.Since(start))
+
+	start = time.Now()
+	cnt = 0
+	filepath.Walk(BaseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if info.IsDir() {
+			cnt++
+		}
+		return nil
+	})
+	t.Logf("Walk遍历%d个文件夹, 耗时: %v", cnt, time.Since(start))
+}
+
+func TestSearchFile(t *testing.T) {
+	var (
+		targetInput = "2025"
+		currDirPath = "E:\\Tools\\SetUp\\"
+		err         error
+	)
+	//if searchParams, err = service.ParseParams(targetInput, currDirPath); err != nil {
+	//	return
+	//}
+	//
+	//searchPool := service.NewSearchPool(8)
+	//searchPool.Start(searchParams) // 启动搜索
+	//results, _ := searchPool.Results()
+
+	dirController := controller.NewDirController()
+	response, err := dirController.SearchItemFromInput(targetInput, currDirPath)
+	if err != nil {
+		return
+	}
+	for _, res := range response.Items {
+		t.Logf("找到: %s (大小: %d bytes, 类型: %v)\n", res.Path, res.Size, res.IsDir)
+	}
+	t.Logf("文件个数: %d, 耗时: %v s", len(response.Items), float64(response.DurationNs)/1e9)
 }

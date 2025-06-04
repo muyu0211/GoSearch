@@ -257,3 +257,47 @@
     color: var(--text-secondary);
     font-style: italic;
 }
+
+.search-results-header {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-tertiary, #f0f0f0);
+    border-bottom: 1px solid var(--border-primary, #ddd);
+    border-radius: 4px 4px 0 0; /* 如果列表有圆角 */
+}
+.search-results-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--app-text-color);
+}
+.search-results-header .search-duration {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-left: 0.5em;
+}
+
+.search-results-list .explorer-item {
+    /* 可以为搜索结果项添加一些特殊样式，如果需要的话 */
+}
+
+.search-result-path { /* 用于在搜索结果中显示完整路径 */
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+    /* white-space: normal; */ /* 如果希望长路径换行 */
+    /* word-break: break-all; */
+}
+
+.explorer-loading.list-loader,
+.explorer-loading.full-page-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    min-height: 100px; /* 给加载提示一些最小高度 */
+}
+.full-page-loader {
+    min-height: calc(100vh - 150px); /* 示例：占据大部分页面 */
+}

@@ -18,10 +18,6 @@ export function GetRetrieveDes() {
   return window['go']['controller']['DirController']['GetRetrieveDes']();
 }
 
-export function GetSearchInput(arg1, arg2) {
-  return window['go']['controller']['DirController']['GetSearchInput'](arg1, arg2);
-}
-
 export function IndexDir(arg1, arg2) {
   return window['go']['controller']['DirController']['IndexDir'](arg1, arg2);
 }
@@ -36,4 +32,8 @@ export function OpenDirectory(arg1) {
 
 export function RenameItem(arg1, arg2) {
   return window['go']['controller']['DirController']['RenameItem'](arg1, arg2);
+}
+
+export function SearchItemFromInput(arg1, arg2) {
+  return window['go']['controller']['DirController']['SearchItemFromInput'](arg1, arg2);
 }

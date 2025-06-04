@@ -139,7 +139,11 @@ const resources = {
             "Are you sure you want to delete this {{itemName}}?": "Are you sure you want to delete this {{itemName}}?",
             "Delete successfully!": "Delete successfully!",
             "dir": "dir",
-            "file": "file"
+            "file": "file",
+
+            "Search failed: {{message}}": "Search failed: {{message}}",
+            "Found {{count}} items for \"{{query}}\" in {{duration}}s.": "Found {{count}} items for \"{{query}}\" in {{duration}}s.",
+            "Please enter a search term.": "Please enter a search term.",
         }
     },
     zh: { // 中文翻译
@@ -266,7 +270,11 @@ const resources = {
             "Are you sure you want to delete this {{itemName}}?": "确认删除{{itemName}}?",
             "Delete successfully!": "删除成功!",
             "dir": "文件夹",
-            "file": "文件"
+            "file": "文件",
+
+            "Search failed: {{message}}": "搜索失败:{{message}}",
+            "Found {{count}} items for \"{{query}}\" in {{duration}}s.": "搜索\"{{query}}\", 共找到{{count}}个条目, 耗时{{duration}}s.",
+            "Please enter a search term.": "请输入搜索条件"
         }
     }
 };

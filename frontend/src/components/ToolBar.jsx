@@ -38,27 +38,33 @@ function ToolBar({ currentPath, historyPath, onPathSubmit, onGoBack, onSearchFil
     // 提交路径栏
     const handleEditablePathSubmit = async (event) => {
         event.preventDefault();
-        const newPath = editablePath.trim();
+        const query = editablePath.trim();
         setIsEditingPath(false);
-        if (newPath === "") {
-            onPathSubmit(newPath);
+        if (query === "") {
+            onPathSubmit(query);
             return;
         }
         // 1. 检查是否是历史路径中的完整路径
-        if (historyPath && historyPath.some(path => path === newPath)) {
-            onPathSubmit(newPath)
+        if (historyPath && historyPath.some(path => path === query)) {
+            onPathSubmit(query)
             return;
         }
         // 2. 判断是否是绝对路径
-        const isWindowsAbsPath = /^[a-zA-Z]:[\/\\]/.test(newPath) || newPath.startsWith("\\\\");
-        const isUnixAbsPath = newPath.startsWith("/");
+        const isWindowsAbsPath = /^[a-zA-Z]:[\/\\]/.test(query) || query.startsWith("\\\\");
+        const isUnixAbsPath = query.startsWith("/");
+        
         if ((isWindows && isWindowsAbsPath) || (!isWindows && isUnixAbsPath)) {
             // TODO: 用户输入绝对路径时可能是索引文件也可能是索引文件夹
-            onPathSubmit(newPath);
+            onPathSubmit(query);
             return;
         }
+
+        // 3. 判断输入的是否是当前路径下的条目（即相对路径）
+        // TODO:
+        // if (query)
+
         // 4. 如果以上都不是，则视为在当前目录下进行搜索
-        onSearchFile(currentPath, newPath);
+        onSearchFile(currentPath, query);
     };
 
     // 失焦时不进行提交

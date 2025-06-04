@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type DirController struct {
@@ -17,6 +18,11 @@ type DirController struct {
 	pathCache        *service.PathCache
 	isIndexing       bool
 	totalFileIndexed int
+}
+
+type SearchResponse struct {
+	Items      []*service.FileSystemEntry `json:"items"`
+	DurationNs time.Duration              `json:"duration_ns"` // 纳米
 }
 
 func NewDirController() *DirController {
@@ -143,14 +149,21 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 }
 
 // SearchItemFromInput 处理用户搜索框输入
-func (d *DirController) SearchItemFromInput(targetInput string, currDirPath string) ([]*service.FileSystemEntry, error) {
+func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*SearchResponse, error) {
 	var (
-		searchParams = service.ParseParams(targetInput, currDirPath)
+		searchParams *service.SearchParams
 		items        []*service.FileSystemEntry
 		err          error
 	)
+	log.Println(query)
+	log.Println(currDirPath)
 	if currDirPath == "" {
 		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
+	}
+
+	start := time.Now()
+	if searchParams, err = service.ParseParams(query, currDirPath); err != nil {
+		return nil, err
 	}
 
 	if items, err = service.SearchItems(searchParams); err != nil {
@@ -158,7 +171,7 @@ func (d *DirController) SearchItemFromInput(targetInput string, currDirPath stri
 	}
 
 	// TODO: check结果是否与查询要求相符
-	return items, nil
+	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 
 // GetRetrieveDes 文件检索说明
