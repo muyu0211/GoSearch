@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -74,4 +75,11 @@ func GetParentPath(os string, path string) (string, string) {
 		idx = strings.LastIndex(path, "/")
 	}
 	return path[:idx], path[idx+1:]
+}
+
+func Join(elem ...string) string {
+	if len(elem) > 0 && strings.HasSuffix(elem[0], ":") {
+		elem[0] += "\\"
+	}
+	return filepath.Join(elem...)
 }

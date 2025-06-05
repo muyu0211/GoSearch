@@ -68,7 +68,6 @@ function Explorer() {
         loadData('');
     }, [loadData]);
 
-    // TODO: 处理输入框检索文件
     const handleSearchFile = async (currentPath, query) => {
         setIsLoading(true);
         setViewMode('search_results'); // 切换到搜索结果视图模式
@@ -116,9 +115,10 @@ function Explorer() {
             setSearchResults(response.items || []);
             setSearchDuration(response.duration_ns); // 假设 duration 是纳秒，转换为毫秒或秒显示
         } catch (error) {
-            toast.error(t("Search failed: {{message}}", { message: String(error) })); // error 可能不是对象
+            toast.error(t("Search failed: {{message}}", { message: String(error) }));
             setSearchResults([]);
             setSearchDuration(null);
+            loadData(currentPath)
             // 可以选择回退到浏览模式
             // setViewMode(currentPath === '' ? 'drives' : 'files');
         } finally {
@@ -136,7 +136,13 @@ function Explorer() {
         }
     }
 
-    const handleItemClick = (item) => {
+    // 单击时选中（提供高亮提示）
+    const handleItemClick =(item) => {
+        // TODO: 处理和双击时的冲突
+        // toast("选中", item.name)
+    }
+
+    const handleItemDoubleClick = (item) => {
         if (item.is_dir && item.path !== "") {
             if (currentPath !== item.path) {
                 loadData(item.path);
@@ -174,7 +180,6 @@ function Explorer() {
         }
     };
 
-    // 渲染搜索结果列表 (新的渲染函数)
     const renderSearchResultsView = () => {
         if (isLoading) {
             return <div className="explorer-loading list-loader">{t('Searching for "{{query}}"...', { query: searchQuery })}</div>;
@@ -183,11 +188,11 @@ function Explorer() {
             <>
                 <div className="search-results-header">
                     <h3>
-                        {t('Search Results for "{{query}}" in "{{path}}"', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
+                        {t('Search Results for \"{{query}}\" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
                     </h3>
                     {searchDuration !== null && (
                         <span className="search-duration">
-                            ({t('Found {{count}} items in {{duration}}s', { count: searchResults.length, duration: (searchDuration / 1e9).toFixed(3) })})
+                            ({t('Found {{count}} items in {{duration}}s.', { count: searchResults.length, duration: (searchDuration / 1e9).toFixed(3) })})
                         </span>
                     )}
                 </div>
@@ -198,12 +203,12 @@ function Explorer() {
                         {searchResults.map((item) => (
                             <li
                                 key={item.path} // 确保 item.path 是唯一的
-                                onDoubleClick={() => handleItemClick(item)}
-                                // onContextMenu={(e) => handleItemContextMenu(e, item)}
+                                onDoubleClick={() => handleItemDoubleClick(item)}
+                                onContextMenu={(e) => handleItemRightClick(e, item)}
                                 className="explorer-item"
                                 tabIndex={0}
-                                onKeyDown={(e) => { if (e.key === 'Enter') handleItemClick(item); }}
-                                title={item.path} // 显示完整路径作为提示
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleItemDoubleClick(item); }}
+                                title={item.path}
                             >
                                 <span className="item-icon">{item.is_dir ? '📁' : (item.file_type ? `.${item.file_type}` : '📄')}</span>
                                 <span className="item-name">{item.name}</span>
@@ -218,7 +223,6 @@ function Explorer() {
             </>
         );
     };
-
 
     const renderDrivesView = () => (
         <div className="disk-explorer-container">
@@ -297,14 +301,13 @@ function Explorer() {
                         {items.map((item) => (
                             <li
                                 key={item.path}
-                                onDoubleClick={() => handleItemClick(item)}
+                                onClick={()=>handleItemClick(item)}
+                                onDoubleClick={() => handleItemDoubleClick(item)}
                                 onContextMenu={(e) => handleItemRightClick(e, item)}
                                 className="explorer-item"
                                 tabIndex={0}    // 可以添加 tabIndex 使其可被键盘聚焦，并用 onKeyDown 处理 Enter 键作为进入
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleItemClick(item); // Enter 键也视为双击进入
-                                    }
+                                title={item.path}
+                                onKeyDown={(e) => {if (e.key === 'Enter') {handleItemDoubleClick(item); }
                                 }}
                             >
                                 <span className="item-icon">{item.is_dir ? '📁' : '📄'}</span>
@@ -344,7 +347,7 @@ function Explorer() {
                 item={rightClickModelItem}
                 isVisible={rightClickModelVisible}
                 position={rightClickModelPosition}
-                onDoubleClick={handleItemClick}
+                onDoubleClick={handleItemDoubleClick}
                 onClose={closeContextMenu}
                 loadData={loadData}
             />

@@ -3,6 +3,7 @@ package test
 import (
 	"GoSearch/app/controller"
 	"GoSearch/app/service"
+	"GoSearch/app/utils"
 	"encoding/json"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -214,7 +215,7 @@ func TestDirWalk(t *testing.T) {
 func TestSearchFile(t *testing.T) {
 	var (
 		targetInput = "2025"
-		currDirPath = "E:\\Tools\\SetUp\\"
+		currDirPath = "E:\\Tools\\SetUp"
 		err         error
 	)
 	//if searchParams, err = service.ParseParams(targetInput, currDirPath); err != nil {
@@ -234,4 +235,8 @@ func TestSearchFile(t *testing.T) {
 		t.Logf("找到: %s (大小: %d bytes, 类型: %v)\n", res.Path, res.Size, res.IsDir)
 	}
 	t.Logf("文件个数: %d, 耗时: %v s", len(response.Items), float64(response.DurationNs)/1e9)
+}
+
+func Test(t *testing.T) {
+	t.Log(utils.Join("C:", "bb\\cc.txt"))
 }

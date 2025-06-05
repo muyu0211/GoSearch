@@ -142,8 +142,10 @@ const resources = {
             "file": "file",
 
             "Search failed: {{message}}": "Search failed: {{message}}",
-            "Found {{count}} items for \"{{query}}\" in {{duration}}s.": "Found {{count}} items for \"{{query}}\" in {{duration}}s.",
+            "Found {{count}} items in {{duration}}s.": "Found {{count}} items in {{duration}}s.",
             "Please enter a search term.": "Please enter a search term.",
+            "Search Results for \"{{query}}\" in {{path}} ": "Search Results for \"{{query}}\" in {{path}} ",
+            "No items found matching your search criteria.": "No items found matching your search criteria.",
         }
     },
     zh: { // 中文翻译
@@ -273,8 +275,10 @@ const resources = {
             "file": "文件",
 
             "Search failed: {{message}}": "搜索失败:{{message}}",
-            "Found {{count}} items for \"{{query}}\" in {{duration}}s.": "搜索\"{{query}}\", 共找到{{count}}个条目, 耗时{{duration}}s.",
-            "Please enter a search term.": "请输入搜索条件"
+            "Found {{count}} items in {{duration}}s.": "共找到{{count}}个条目, 耗时{{duration}}s.",
+            "Please enter a search term.": "请输入搜索条件",
+            "Search Results for \"{{query}}\" in {{path}} ": "在{{path}}路径下搜索\"{{query}}\"",
+            "No items found matching your search criteria.": "未找到符合搜索条件的项目",
         }
     }
 };

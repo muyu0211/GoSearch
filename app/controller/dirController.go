@@ -150,13 +150,12 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 
 // SearchItemFromInput 处理用户搜索框输入
 func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*SearchResponse, error) {
+	log.Println("currDirPath:", currDirPath)
 	var (
 		searchParams *service.SearchParams
 		items        []*service.FileSystemEntry
 		err          error
 	)
-	log.Println(query)
-	log.Println(currDirPath)
 	if currDirPath == "" {
 		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
@@ -177,9 +176,13 @@ func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*
 // GetRetrieveDes 文件检索说明
 func (d *DirController) GetRetrieveDes() (string, error) {
 	return runtime.MessageDialog(d.ctx, runtime.MessageDialogOptions{
-		Type:    runtime.InfoDialog,
-		Title:   "文件检索说明",
-		Message: "文件检索说明",
+		Type:  runtime.InfoDialog,
+		Title: "文件检索说明",
+		Message: "文件检索说明:\n" +
+			"1.文件名检索: 直接输入文件名前缀, 将从当前路径下检索所有符合要求的项目;\n" +
+			"2.文件类型检索: type: [文件扩展名], 例如: type: txt, 将从当前路径下检索所有.txt文件，也可同时输入多个文件扩展名, type: txt doc;\n" +
+			"3.文件大小检索: size: [文件大小], 例如: size: >10B <= 20MB, 将从当前路径下检索所有大小大于10B, 小于20MB的文件;\n" +
+			"多个检索关键字可同时使用: type: txt size: >10B <5MB.\n",
 	})
 }
 

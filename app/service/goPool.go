@@ -1,6 +1,7 @@
 package service
 
 import (
+	"GoSearch/app/utils"
 	"context"
 	"log"
 	"os"
@@ -158,7 +159,7 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 
 		// 都满足则匹配成功
 		results <- &FileSystemEntry{
-			Path:    filepath.Join(t.currPath, entryName),
+			Path:    utils.Join(t.currPath, entryName),
 			Name:    entryName,
 			IsDir:   entry.IsDir(),
 			Size:    entryInfo.Size(),
