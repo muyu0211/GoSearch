@@ -10,6 +10,8 @@
     z-index: 1000; /* 确保在最上层 */
     min-width: 180px; /* 菜单最小宽度 */
     animation: fadeInContextMenu 0.15s ease-out;
+    opacity: 0;
+    transition: opacity 0.1s ease-out; /* 可选的淡入效果 */
 }
 
 @keyframes fadeInContextMenu {

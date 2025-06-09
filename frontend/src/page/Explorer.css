@@ -149,47 +149,64 @@
     color: var(--app-text-color);
 }
 
+.file-list-view-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* 让它占据剩余的垂直空间 */
+    overflow: hidden; /* 防止内部滚动条影响外部 */
+    background-color: var(--results-bg-color); /* 背景色可以放在这里 */
+    border-radius: 0 0 6px 6px; /* 如果希望列表区域有圆角 */
+}
+
 .explorer-table-header {
     display: grid;
-    grid-template-columns: 40px minmax(100px, 1fr) minmax(30px, 0.5fr) minmax(120px, 1.5fr) minmax(100px, 1fr);/* 图标 名称 大小 类型 修改日期 */
-    padding: 0.75rem 0;
+    /* 图标(40px) | 名称 (3fr) | 大小 (1fr) | 路径 (1fr) | 修改日期 (1.5fr) */
+    grid-template-columns: 40px minmax(150px, 2.5fr) minmax(80px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1.5fr);
+    padding: 0.25rem 0; /* 移除左右 padding，让子元素控制 */
     font-weight: bold;
     font-size: 0.9em;
     border-bottom: 1px solid var(--border-primary, var(--input-border-color));
-    background-color: var(--bg-tertiary, #f0f0f0); /* 表头背景 */
-    user-select: none; /* 防止选中文本 */
-    flex-shrink: 0;
+    background-color: var(--bg-tertiary, #f0f0f0);
+    user-select: none;
+    flex-shrink: 0; /* 表头不收缩 */
 }
 .explorer-table-header > div {
-    padding: 0 0.75rem;
+    padding: 0 0.75rem; /* 给每个表头单元格左右内边距 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex; /* 用于垂直居中文字 */
+    display: flex;
     align-items: center;
-    /*justify-content: center; !* <--- 水平居中 *!*/
+     /*justify-content: center; -- 根据需要设置对齐*/
 }
 .header-name { text-align: left; }
-.header-size { justify-content: right; }
+.header-size { justify-content: left; }
 .header-modified { justify-content: center; }
 /*.header-type { text-align: left; }*/
 
+.explorer-item-list-wrapper {
+    flex-grow: 1; /* 让 AutoSizer 的父容器占据所有可用垂直空间 */
+    width: 100%;
+    overflow: hidden; /* AutoSizer 会处理内部滚动 */
+}
+
 .explorer-item-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-    overflow-y: auto; /* 列表内容滚动 */
+    /* react-window 会处理滚动条，但你可以设置一些基础样式 */
+    overflow-y: scroll !important; /* 确保滚动条总是由 react-window 控制 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
 }
 
 .explorer-item {
-    display: grid;
-    grid-template-columns: 40px minmax(100px, 1fr) minmax(30px, 0.5fr) minmax(100px, 1fr) minmax(120px, 1.5fr);
+    display: grid; /* 使用 Grid 布局来对齐列 */
+    /* 必须与 .explorer-table-header 的 grid-template-columns 完全一致 */
+    grid-template-columns: 40px minmax(150px, 2.5fr) minmax(80px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1.5fr);
     align-items: center;
-    padding: 0.5rem 0.5rem; /* 调整列表项的上下内边距 */
-    border-bottom: 1px solid var(--border-primary, #e7e7e7); /* 更细的分割线 */
-    cursor: pointer;
-    font-size: 0.9em;
+    padding: 0; /* 移除 li 的默认 padding，由内部 span 控制 */
+    /* height: ITEM_HEIGHT; -- 高度由 react-window 控制 */
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--border-primary, #eee); /* 列表项之间的分隔线 */
+    cursor: default; /* 默认光标，双击时会变 */
     transition: background-color 0.15s ease;
 }
 .explorer-item:last-child {
@@ -198,6 +215,24 @@
 .explorer-item:hover {
     background-color: var(--results-item-hover-bg-color);
 }
+.explorer-item.selected {
+    background-color: var(--results-item-selected-bg-color);
+}
+.explorer-item:focus-visible { /* 键盘聚焦时的样式 */
+    outline: 2px solid var(--input-focus-border-color);
+    outline-offset: -2px;
+}
+
+.explorer-item > span { /* 列表项的单元格 */
+    padding: 0.5rem 0.75rem; /* 单元格内边距 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex; /* 用于垂直居中 */
+    align-items: center;
+    font-size: 0.9em;
+}
+
 .explorer-item .item-icon {
     font-size: 1.2em; /* 图标大小 */
     color: var(--text-secondary, #555);
@@ -215,6 +250,9 @@
     padding: 0 0.5rem;
     color: var(--text-secondary, #777);
     white-space: nowrap;
+}
+.item-modified{
+    justify-content: center;
 }
 .explorer-item .item-path {
     padding: 0 0.75rem;
@@ -251,23 +289,25 @@
     color: var(--text-secondary);
 }
 
-.explorer-loading.list-loader { /* 用于加载列表内容时的加载提示 */
-    padding: 2rem;
-    text-align: center;
+.explorer-loading.list-loader,
+.explorer-empty.list-loader { /* 确保空状态和加载状态也占据空间 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1; /* 占据剩余空间 */
     color: var(--text-secondary);
-    font-style: italic;
+    padding: 2rem;
 }
-
 .search-results-header {
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
+    /*padding: 0.5rem 1rem;*/
+    margin-bottom: 0.1rem;
     background-color: var(--bg-tertiary, #f0f0f0);
     border-bottom: 1px solid var(--border-primary, #ddd);
     border-radius: 4px 4px 0 0; /* 如果列表有圆角 */
 }
 .search-results-header h3 {
     margin: 0;
-    font-size: 1.1em;
+    font-size: 0.9em;
     color: var(--app-text-color);
 }
 .search-results-header .search-duration {
@@ -276,9 +316,6 @@
     margin-left: 0.5em;
 }
 
-.search-results-list .explorer-item {
-    /* 可以为搜索结果项添加一些特殊样式，如果需要的话 */
-}
 
 .search-result-path { /* 用于在搜索结果中显示完整路径 */
     font-size: 0.8em;

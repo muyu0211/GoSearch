@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import './RightClickModel.css';
 import {toast} from "react-toastify";
@@ -7,12 +7,53 @@ import {getParentPath} from "../assets/utils/utils.js";
 import ConfirmModal from "./ConfirmModal.jsx";
 import {DeleteItem} from "../../wailsjs/go/controller/DirController.js";
 
-function RightClickModel({ item, isVisible, position, onDoubleClick, onClose, loadData }) {
+const RightClickModel = React.forwardRef(({  item, isVisible, position, onDoubleClick, onClose, loadData }, ref) => {
     const { t } = useTranslation();
     const menuRef = useRef(null);
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [itemToRename, setItemToRename] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [calculatedPosition, setCalculatedPosition] = useState({ top: 0, left: 0 });
+
+    useEffect(() => {
+        if (typeof ref === 'function') {
+            ref(menuRef.current);
+        } else if (ref) {
+            ref.current = menuRef.current;
+        }
+    }, [ref]);
+
+    // 使用 useLayoutEffect 来在 DOM 更新后、浏览器绘制前计算位置，避免闪烁
+    useLayoutEffect(() => {
+        if (isVisible && menuRef.current && position) {
+            const menu = menuRef.current;
+            const menuRect = menu.getBoundingClientRect();
+            const menuWidth = menuRect.width;
+            const menuHeight = menuRect.height;
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let newLeft = position.x;
+            let newTop = position.y;
+
+            // 调整水平位置
+            if (position.x + menuWidth > viewportWidth) {
+                newLeft = viewportWidth - menuWidth - 7; // 7px margin from edge
+            }
+            if (newLeft < 7) { // 防止完全移出左边
+                newLeft = 7;
+            }
+            // 调整垂直位置
+            if (position.y + menuHeight > viewportHeight) {
+                newTop = viewportHeight - menuHeight - 7; // 7px margin from edge
+            }
+            if (newTop < 7) { // 防止完全移出顶部
+                newTop = 7;
+            }
+            setCalculatedPosition({ top: newTop, left: newLeft });
+        }
+    }, [isVisible, position, item]);
 
     // 点击菜单外部时关闭菜单
     useEffect(() => {
@@ -53,15 +94,12 @@ function RightClickModel({ item, isVisible, position, onDoubleClick, onClose, lo
                 toast.info('新建文件')
                 break;
             case 'open':
-                break;
-            case 'open_file':
                 onDoubleClick(item); // 复用双击逻辑
                 onClose();
                 break;
             case 'copy_path':
                 try {
-                    // await ClipboardSetText(item.path); // Wails runtime API
-                    await navigator.clipboard.writeText(item.path); // 浏览器原生 API (Wails 环境中通常可用)
+                    await navigator.clipboard.writeText(item.path);
                     toast.success(t('Path copied to clipboard!'));
                 } catch (copyErr) {
                     toast.error(t('Failed to copy path.'));
@@ -120,7 +158,7 @@ function RightClickModel({ item, isVisible, position, onDoubleClick, onClose, lo
         menuItems.push({ label: t('Delete'), action: 'delete' });
         // ... 其他文件夹操作
     } else {
-        menuItems.push({ label: t('Open'), action: 'open_file' });
+        menuItems.push({ label: t('Open'), action: 'open' });
         menuItems.push({ label: t('Copy Path'), action: 'copy_path' });
         menuItems.push({ label: t('Copy File'), action: 'copy_file' });
         menuItems.push({ label: t('Rename'), action: 'rename' });
@@ -131,44 +169,43 @@ function RightClickModel({ item, isVisible, position, onDoubleClick, onClose, lo
 
     return (
         <>
-        <div
-            ref={menuRef}
-            className="context-menu"
-            style={{ top: position.y, left: position.x }}
-            onMouseDown={(e) => e.stopPropagation()}
-        >
-            <ul>
-                {menuItems.map((menuItem) => (
-                    <li key={menuItem.action} onClick={() => handleContextMenuAction(menuItem.action, item)}>
-                        {menuItem.label}
-                    </li>
-                ))}
-            </ul>
-        </div>
-        {/* 渲染重命名模态框 */}
-        {itemToRename && (
-            <RenameModal
-                isOpen={showRenameModal}
-                item={itemToRename}
-                onClose={() => {
-                    setShowRenameModal(false);
-                    setItemToRename(null);
-                }}
-                onRightModelClose={onClose}
-                loadData={loadData}
+            <div
+                ref={menuRef}
+                className="context-menu"
+                style={{ top: calculatedPosition.top, left: calculatedPosition.left, opacity: isVisible ? 1 : 0 }}
+                onMouseDown={(e) => e.stopPropagation()}
+            >
+                <ul>
+                    {menuItems.map((menuItem) => (
+                        <li key={menuItem.action} onClick={() => handleContextMenuAction(menuItem.action, item)}>
+                            {menuItem.label}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            {itemToRename && (
+                <RenameModal
+                    isOpen={showRenameModal}
+                    item={itemToRename}
+                    onClose={() => {
+                        setShowRenameModal(false);
+                        setItemToRename(null);
+                    }}
+                    onRightModelClose={onClose}
+                    loadData={loadData}
+                />
+            )}
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title={t('Confirm Delete')}
+                message={t('Are you sure you want to delete this {{itemName}}?', { itemName: item.name })}
+                onConfirm={confirmDeleteItem}
+                onCancel={cancelDeleteItem}
+                confirmText={t('Delete')}
+                cancelText={t('Cancel')}
             />
-        )}
-        <ConfirmModal
-            isOpen={showDeleteConfirm}
-            title={t('Confirm Delete')}
-            message={t('Are you sure you want to delete this {{itemName}}?', { itemName: item.name })}
-            onConfirm={confirmDeleteItem}
-            onCancel={cancelDeleteItem}
-            confirmText={t('Delete')}
-            cancelText={t('Cancel')}
-        />
         </>
     )
-}
+});
 
 export default RightClickModel;

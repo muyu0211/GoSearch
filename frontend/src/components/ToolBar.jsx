@@ -6,7 +6,7 @@ import { GetRetrieveDes } from '../../wailsjs/go/controller/DirController';
 import {toast} from "react-toastify";
 import {isWindows} from "react-device-detect";
 
-function ToolBar({ currentPath, historyPath, onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
+function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
     const { t } = useTranslation();
     const [isEditingPath, setIsEditingPath] = useState(false);      // 是否正在编辑
     const [editablePath, setEditablePath] = useState('');            // 修改后的内容
@@ -60,8 +60,21 @@ function ToolBar({ currentPath, historyPath, onPathSubmit, onGoBack, onSearchFil
         }
 
         // 3. 判断输入的是否是当前路径下的条目（即相对路径）
-        // TODO:
-        // if (query)
+        if (subDirs && subDirs.length > 0) {
+            const lowerUserInput = query.toLowerCase();
+            const matchedChildDir = subDirs.find(
+                dir => dir.is_dir && dir.name.toLowerCase() === lowerUserInput
+            );
+
+            if (matchedChildDir) {
+                console.log("Submit: Navigating to child directory (relative):", matchedChildDir.path);
+                // matchedChildDir.path 应该是该子文件夹的完整绝对路径
+                // 如果 subDirs 中的 path 不是绝对路径，你需要在这里构建它
+                // 例如: const fullPathToChild = buildFullPath(currentPath, matchedChildDir.name);
+                onPathSubmit(matchedChildDir.path);
+                return;
+            }
+        }
 
         // 4. 如果以上都不是，则视为在当前目录下进行搜索
         onSearchFile(currentPath, query);

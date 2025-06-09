@@ -47,9 +47,12 @@ func SearchItems(searchParams *SearchParams) ([]*FileSystemEntry, error) {
 
 // ParseParams 解析用户搜索参数
 func ParseParams(input, currDirPath string) (*SearchParams, error) {
+	if strings.HasSuffix(currDirPath, ":") {
+		currDirPath = utils.Join(currDirPath)
+	}
 	searchParams := &SearchParams{
 		BaseDir:    currDirPath,
-		SearchTerm: strings.ToLower(input), // 忽略大小写
+		SearchTerm: strings.ToLower(input),
 		FileType:   make(map[string]struct{}),
 		MinSize:    0,
 		MaxSize:    0,

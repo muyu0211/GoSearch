@@ -66,7 +66,6 @@ func (p *SearchPool) Start(params *SearchParams) {
 	}
 
 	// 等待所有协程完成
-	//time.Sleep(10 * time.Second)
 	go p.WaitAndStop()
 }
 
@@ -74,13 +73,6 @@ func (p *SearchPool) Start(params *SearchParams) {
 func (p *SearchPool) Schedule(params *SearchParams) {
 	// 结束时关闭任务队列
 	defer close(p.tasks)
-
-	//// 考虑是否排除 '.' 开头的文件夹, 例如 "。git"
-	//if sysInfo.OS == utils.WINDOWS {
-	//	// 如果是Win系统，则使用系统调用优化
-	//} else {
-	//
-	//}
 
 	err := filepath.WalkDir(params.BaseDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -105,7 +97,6 @@ func (p *SearchPool) WaitAndStop() {
 	p.wg.Wait()
 	// 释放资源
 	close(p.results)
-	//close(p.tasks)
 }
 
 // Run 进行item检索

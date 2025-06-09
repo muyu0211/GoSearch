@@ -214,17 +214,12 @@ func TestDirWalk(t *testing.T) {
 
 func TestSearchFile(t *testing.T) {
 	var (
-		targetInput = "2025"
-		currDirPath = "E:\\Tools\\SetUp"
+		//targetInput = "2025"
+		//currDirPath = "E:"
+		targetInput = "Kits"
+		currDirPath = "D:"
 		err         error
 	)
-	//if searchParams, err = service.ParseParams(targetInput, currDirPath); err != nil {
-	//	return
-	//}
-	//
-	//searchPool := service.NewSearchPool(8)
-	//searchPool.Start(searchParams) // 启动搜索
-	//results, _ := searchPool.Results()
 
 	dirController := controller.NewDirController()
 	response, err := dirController.SearchItemFromInput(targetInput, currDirPath)

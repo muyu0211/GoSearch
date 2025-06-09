@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import './Explorer.css';
@@ -6,8 +6,43 @@ import {GetDiskInfo, IndexDir, SearchItemFromInput} from '../../wailsjs/go/contr
 import ToolBar from "../components/ToolBar.jsx";
 import {formatBytes, formatDate, getParentPath} from "../assets/utils/utils.js"
 import RightClickModel from "../components/RightClickModel.jsx";
+import { FixedSizeList as List } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 const REFRESH_INTERVAL = 10000; // 每 10 秒刷新一次
+const ITEM_HEIGHT = 43;
+
+// 这个组件现在接收 style, index, 和 data (包含 items 和其他上下文)
+const FileListItem = React.memo(({ index, style, data }) => {
+    const { items, selectedItemPath, t, handleItemClick, handleItemDoubleClick, handleItemRightClick, formatBytes, formatDate, getParentPath } = data;
+    const item = items[index];
+
+    if (!item) return null;
+
+    return (
+        <div style={style} className="list-row-container">
+            <li
+                onClick={() => handleItemClick(item)}
+                onDoubleClick={() => handleItemDoubleClick(item)}
+                onContextMenu={(e) => handleItemRightClick(e, item)}
+                className={`explorer-item ${selectedItemPath === item.path ? 'selected' : ''}`}
+                tabIndex={-1} // List 组件会处理可访问性，单个项通常不需要 tabIndex=0
+                title={item.path}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleItemDoubleClick(item);
+                    }
+                }}
+            >
+                <span className="item-icon">{item.is_dir ? '📁' : '📄'}</span>
+                <span className="item-name" title={item.name}>{item.name}</span>
+                <span className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : (item.is_dir ? '' : '-')}</span>
+                <span className="item-path">{getParentPath(item.path)}</span>
+                <span className="item-modified">{item.mod_time ? formatDate(item.mod_time) : ''}</span>
+            </li>
+        </div>
+    );
+});
 
 function Explorer() {
     const { t } = useTranslation();
@@ -22,7 +57,9 @@ function Explorer() {
     const [viewMode, setViewMode] = useState('drives');
     const [rightClickModelVisible, setRightClickModelVisible] = useState(false);
     const [rightClickModelPosition, setRightClickModelPosition] = useState({ x: 0, y: 0 });
-    const [rightClickModelItem, setRightClickModelItem] = useState(null); // 当前右键点击的项目
+    const [rightClickModelItem, setRightClickModelItem] = useState(null);
+    const [selectedItemPath, setSelectedItemPath] = useState(null);
+    const contextMenuRef = useRef(null);
 
     // 加载数据的主要函数(接收参数：文件夹绝对路径path)
     const loadData = useCallback(async (path, useCache=true) => {
@@ -76,42 +113,6 @@ function Explorer() {
         try {
             const response = await SearchItemFromInput(query, currentPath);
             console.log("Frontend: Raw response from SearchItemFromInput:", response);
-
-            // Wails Go 方法如果返回多个值，JS 端会收到一个对象
-            // 第一个返回值在 response.Result0，第二个在 response.Result1，以此类推
-            // 如果Go方法返回 (value, error)，JS端 await 会直接得到 value，错误在 catch
-            // 如果Go方法返回 (value1, value2, error)，JS端 await 会得到 { Result0: value1, Result1: value2 }
-            // 你需要确认 SearchItemFromInput 在 Go 中是如何绑定的，以及 Wails 如何包装多返回值
-
-            // 假设 Wails 将 (items, duration, error) 包装为：
-            // 成功: { Result0: items, Result1: duration } (error 为 nil)
-            // 失败: catch(error) 会捕获 (error 不为 nil)
-
-            // 或者，如果 SearchItemFromInput 只返回 (items, error) 并且 duration 是 items 的一部分或不返回给前端
-            // 那么就是 const items = await SearchItemFromInput(query, currentSearchDir);
-
-            // 我们先按照你给的 Go 签名 (items, duration, error) 来假设前端接收方式
-            // 这通常意味着如果 Go 的 error 不为 nil，JS 的 Promise 会 reject
-            // 如果 Go 的 error 为 nil，JS 的 Promise 会 resolve 一个包含前两个返回值的对象或数组
-
-            // 让我们假设一个更常见的 Wails 行为：如果 Go 返回 (val1, val2, ..., error)
-            // 前端 await 后，如果 error 为 nil，则得到 val1 (如果只有一个非 error 返回值)
-            // 或得到 {Result0: val1, Result1: val2, ...} (如果有多个非 error 返回值)
-
-            // 为了安全，我们先假设 SearchItemFromInput 的绑定行为是：
-            // 如果成功，返回一个对象 { items: [], duration: 0 } (或者你后端直接返回这个结构)
-            // 或者，如果 Wails 自动包装，可能是 { Result0: items, Result1: duration }
-
-            // **你需要根据实际的 wailsjs 生成代码来确定这里的结构**
-            // 让我们先假设后端API经过Wails绑定后，如果成功，前端能直接拿到 items 和 duration
-            // (这可能需要你在Go端将 duration 作为 SearchResult 的一部分，或者返回一个包含两者的结构体)
-
-            // **最可能的情况是，如果Go返回 (items, duration, error):**
-            // 1. 如果 error != nil, 前端 Promise reject(error)
-            // 2. 如果 error == nil, 前端 Promise resolve({Result0: items, Result1: duration})
-
-            // 我们先按第二种情况处理，如果不对，你需要调整
-
             setSearchResults(response.items || []);
             setSearchDuration(response.duration_ns); // 假设 duration 是纳秒，转换为毫秒或秒显示
         } catch (error) {
@@ -137,25 +138,27 @@ function Explorer() {
     }
 
     // 单击时选中（提供高亮提示）
-    const handleItemClick =(item) => {
-        // TODO: 处理和双击时的冲突
-        // toast("选中", item.name)
-    }
+    const handleItemClick = useCallback((item) => {
+        console.log("Single click on:", item.name);
+        setSelectedItemPath(item.path); // 更新选中项
+        // TODO: 更新预览面板等
+    }, []);
 
-    const handleItemDoubleClick = (item) => {
+    const handleItemDoubleClick = useCallback(async (item) => { // 确保是 async 如果 loadData 是
+        console.log("Double click on:", item);
         if (item.is_dir && item.path !== "") {
             if (currentPath !== item.path) {
-                loadData(item.path);
-                // 加载新路径时因为文件夹不存在或者权限不足等问题而没有进入下一级目录时不更新pathHistory
-                if (currentPath !== historyPath[historyPath.length -1]) {
-                    setHistoryPath(prev => [...prev, currentPath]);
+                const oldPathForHistory = currentPath;
+                await loadData(item.path); // loadData 内部会更新 currentPath
+                if (item.path !== oldPathForHistory) {
+                    setHistoryPath(prev => [...prev, oldPathForHistory]);
                 }
             }
         } else if (!item.is_dir) {
-            // TODO: 双击打开
-            toast.info("This is a file.");
+            toast.info(t("Opening file: {{name}} (not yet implemented)", { name: item.name }));
+            // OpenFileWithDefaultProgram(item.path);
         }
-    };
+    }, [currentPath, loadData, t]); // 添加 loadData 和 t 到依赖项
 
     const handleItemRightClick = (event, item) => {
         event.preventDefault(); // 阻止浏览器默认右键菜单
@@ -178,50 +181,6 @@ function Explorer() {
         } else if (viewMode === 'files') {
             loadData('');
         }
-    };
-
-    const renderSearchResultsView = () => {
-        if (isLoading) {
-            return <div className="explorer-loading list-loader">{t('Searching for "{{query}}"...', { query: searchQuery })}</div>;
-        }
-        return (
-            <>
-                <div className="search-results-header">
-                    <h3>
-                        {t('Search Results for \"{{query}}\" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
-                    </h3>
-                    {searchDuration !== null && (
-                        <span className="search-duration">
-                            ({t('Found {{count}} items in {{duration}}s.', { count: searchResults.length, duration: (searchDuration / 1e9).toFixed(3) })})
-                        </span>
-                    )}
-                </div>
-                {searchResults.length === 0 ? (
-                    <div className="explorer-empty">{t('No items found matching your search criteria.')}</div>
-                ) : (
-                    <ul className="explorer-item-list search-results-list">
-                        {searchResults.map((item) => (
-                            <li
-                                key={item.path} // 确保 item.path 是唯一的
-                                onDoubleClick={() => handleItemDoubleClick(item)}
-                                onContextMenu={(e) => handleItemRightClick(e, item)}
-                                className="explorer-item"
-                                tabIndex={0}
-                                onKeyDown={(e) => { if (e.key === 'Enter') handleItemDoubleClick(item); }}
-                                title={item.path}
-                            >
-                                <span className="item-icon">{item.is_dir ? '📁' : (item.file_type ? `.${item.file_type}` : '📄')}</span>
-                                <span className="item-name">{item.name}</span>
-                                <span className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : ''}</span>
-                                {/* 在搜索结果中，显示完整路径可能比父路径更有用 */}
-                                <span className="item-path search-result-path">{item.path}</span>
-                                <span className="item-modified">{item.mod_time ? formatDate(item.mod_time) : ''}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </>
-        );
     };
 
     const renderDrivesView = () => (
@@ -283,47 +242,73 @@ function Explorer() {
         </div>
     );
 
-    const renderFileListView = () => {
-        const items = [...(currentItems.sub_dirs || []), ...(currentItems.files || [])];
+    const renderFileListView = (itemsToRender, listType = 'files') => {
+        const sortedItems = [
+            ...(itemsToRender.sub_dirs || []).map(dir => ({ ...dir, is_dir_sort: 0 })),
+            ...(itemsToRender.files || []).map(file => ({ ...file, is_dir_sort: 1 }))
+        ].sort((a, b) => {
+            if (a.is_dir_sort !== b.is_dir_sort) {
+                return a.is_dir_sort - b.is_dir_sort;
+            }
+            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        // 如果是搜索结果，itemsToRender 直接就是扁平数组 searchResults
+        let finalItemsToRender = [];
+        if (listType === 'search_results') {
+            finalItemsToRender = itemsToRender;
+        } else { // 'files' view mode
+            finalItemsToRender = sortedItems;
+        }
+
+        const itemDataContext= {
+            items: finalItemsToRender,
+            selectedItemPath,
+            t,
+            handleItemClick,
+            handleItemDoubleClick,
+            handleItemRightClick,
+            formatBytes,
+            formatDate,
+            getParentPath,
+            listType
+        };
+
         return (
-            <>
+            <div className="file-list-view-container">
                 <div className="explorer-table-header">
-                    <div className="header-icon"> {/* 文件夹/文件图标 */} </div>
+                    <div className="header-icon"></div>
                     <div className="header-name">{t('Name')}</div>
                     <div className="header-size">{t('Size')}</div>
-                    <div className="header-type">{t('Path')}</div>
+                    <div className="header-type">{t('Path')}</div> {/* 你这里显示的是 Path，不是 Type */}
                     <div className="header-modified">{t('Modified')}</div>
                 </div>
-                {isLoading && items.length === 0 ? (
-                    <div className="explorer-loading list-loader">{t('Loading')}</div>
+
+                {isLoading && finalItemsToRender.length === 0 ? (
+                    <div className="explorer-loading list-loader">{listType === 'search_results' ? t('Searching...') : t('Loading...')}</div>
+                ) : !isLoading && finalItemsToRender.length === 0 ? (
+                    <div className="explorer-empty list-loader">
+                        {listType === 'search_results' ? t('No items found matching your search criteria.') : t('This folder is empty')}
+                    </div>
                 ) : (
-                    <ul className="explorer-item-list">
-                        {items.map((item) => (
-                            <li
-                                key={item.path}
-                                onClick={()=>handleItemClick(item)}
-                                onDoubleClick={() => handleItemDoubleClick(item)}
-                                onContextMenu={(e) => handleItemRightClick(e, item)}
-                                className="explorer-item"
-                                tabIndex={0}    // 可以添加 tabIndex 使其可被键盘聚焦，并用 onKeyDown 处理 Enter 键作为进入
-                                title={item.path}
-                                onKeyDown={(e) => {if (e.key === 'Enter') {handleItemDoubleClick(item); }
-                                }}
-                            >
-                                <span className="item-icon">{item.is_dir ? '📁' : '📄'}</span>
-                                <span className="item-name">{item.name}</span>
-                                <span className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : ''}</span>
-                                <span className="item-path">{getParentPath(item.path)}</span>
-                                {/*<span className="item-type">{item.is_dir ? t('Folder') : t('File')}</span>*/}
-                                <span className="item-modified">{!item.is_dir && item.mod_time ? formatDate(item.mod_time) : ''}</span>
-                            </li>
-                        ))}
-                        {items.length === 0 && !isLoading && (
-                            <li className="explorer-empty">{t('This folder is empty')}</li>
-                        )}
-                    </ul>
+                    <div className="explorer-item-list-wrapper">
+                        <AutoSizer>
+                            {({ height, width }) => (
+                                <List
+                                    className="explorer-item-list"
+                                    height={height}
+                                    itemCount={finalItemsToRender.length}
+                                    itemSize={ITEM_HEIGHT}
+                                    width={width}
+                                    itemData={itemDataContext}
+                                >
+                                    {FileListItem}
+                                </List>
+                            )}
+                        </AutoSizer>
+                    </div>
                 )}
-            </>
+            </div>
         );
     };
 
@@ -340,10 +325,25 @@ function Explorer() {
                     onRefresh={loadDataNoCache}
                 />
                 {viewMode === 'drives' && renderDrivesView()}
-                {viewMode === 'files' && renderFileListView()}
-                {viewMode === 'search_results' && renderSearchResultsView()}
+                {viewMode === 'files' && renderFileListView(currentItems, 'files')}
+                {viewMode === 'search_results' && (
+                    <>
+                        <div className="search-results-header">
+                            <h3>
+                                {t('Search Results for \"{{query}}\" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
+                            </h3>
+                            {searchDuration !== null && (
+                                <span className="search-duration">
+                                    ({t('Found {{count}} items in {{duration}}s.', { count: searchResults.length, duration: (searchDuration / 1e9).toFixed(3) })})
+                                </span>
+                            )}
+                        </div>
+                        {renderFileListView(searchResults, 'search_results')}
+                    </>
+                )}
             </div>
             <RightClickModel
+                ref={contextMenuRef}
                 item={rightClickModelItem}
                 isVisible={rightClickModelVisible}
                 position={rightClickModelPosition}
