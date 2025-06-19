@@ -20,3 +20,5 @@ export function OpenDirectory(arg1:string):Promise<string>;
 export function RenameItem(arg1:string,arg2:string):Promise<void>;
 
 export function SearchItemFromInput(arg1:string,arg2:string):Promise<controller.SearchResponse>;
+
+export function SearchItemFromLLM(arg1:string,arg2:string):Promise<controller.SearchResponse>;

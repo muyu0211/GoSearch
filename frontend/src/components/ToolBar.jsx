@@ -8,9 +8,10 @@ import {isWindows} from "react-device-detect";
 
 function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
     const { t } = useTranslation();
-    const [isEditingPath, setIsEditingPath] = useState(false);      // 是否正在编辑
-    const [editablePath, setEditablePath] = useState('');            // 修改后的内容
+    const [isEditingPath, setIsEditingPath] = useState(false);
+    const [editablePath, setEditablePath] = useState('');
     const pathInputRef = useRef(null);
+    const [isLLMSearchMode, setIsLLMSearchMode] = useState(false);
 
     useEffect(() => {
         if (!isEditingPath) {
@@ -77,29 +78,21 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         }
 
         // 4. 如果以上都不是，则视为在当前目录下进行搜索
-        onSearchFile(currentPath, query);
+        onSearchFile(currentPath, query, isLLMSearchMode);
+    };
+
+    const toggleLLMSearchMode = () => {
+        setIsLLMSearchMode(prev => !prev);
+        if (pathInputRef.current && !isEditingPath) { // 如果不在编辑模式，切换后可以自动进入编辑并聚焦
+            switchToEditMode();
+        } else if (pathInputRef.current && isEditingPath) {
+            pathInputRef.current.focus(); // 如果已在编辑模式，确保焦点仍在输入框
+        }
     };
 
     // 失焦时不进行提交
     const handleEditablePathBlur = async () => {
         setIsEditingPath(false);
-        // const newPath = editablePath.trim();
-        // // 只有当编辑框内容与当前路径不同时才提交
-        // if (newPath !== (currentPath || '')) {
-        //     if (newPath || currentPath || currentPath === "") {
-        //         try {
-        //             await onPathSubmit(newPath);
-        //         } catch (error) {
-        //             console.error("Error submitting path on blur:", error);
-        //         } finally {
-        //             setIsEditingPath(false);
-        //         }
-        //     } else { // newPath 为空，且 currentPath 也为空或未定义
-        //         setIsEditingPath(false);
-        //     }
-        // } else { // 内容未变，直接退出编辑
-        //     setIsEditingPath(false);
-        // }
     };
 
     // 监听键盘事件
@@ -130,7 +123,6 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         }
     };
 
-    // TODO: 查看检索说明
     const handleCheckRetrieveDes = (event) => {
         try {
             const message = GetRetrieveDes()
@@ -163,11 +155,19 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                 ) : (
                     <BreadcrumbDisplay
                         currentPath={currentPath}
-                        onNavigateToPath={handleNavigateFromBreadcrumb} // 面包屑项点击导航
-                        onEditPath={switchToEditMode} // 点击面包屑容器进入编辑模式
+                        onNavigateToPath={handleNavigateFromBreadcrumb}
+                        onEditPath={switchToEditMode}
                     />
                 )}
             </div>
+            {/* LLM 模式切换按钮 */}
+            <button
+                onClick={toggleLLMSearchMode}
+                title={isLLMSearchMode ? t('Switch to Standard Search') : t('Switch to LLM Search')}
+                className={`llm-toggle-btn header-action-btn ${isLLMSearchMode ? 'active' : ''}`}
+            >
+                🧠
+            </button>
             <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn">📑</button>
             <button onClick={() => onRefresh(currentPath)} title={t('Refresh')} className="refreshBtn">🔄</button>
         </div>

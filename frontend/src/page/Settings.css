@@ -131,7 +131,7 @@
     border: 1px solid var(--settings-border-color);
     background-color: var(--settings-button-bg-color);
     color: var(--settings-button-text-color);
-    border-radius: 4px;
+    border-radius: var(--border-radius-large);
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
 }
@@ -158,7 +158,7 @@
     color: var(--settings-text-secondary-color);
     padding: 0.6rem 0.9rem;
     border: 1px solid var(--settings-border-color);
-    border-radius: var(--border-radius-middle);
+    border-radius: var(--border-radius-large);
     font-size: 1em;
     white-space: nowrap;
     overflow: hidden;
@@ -172,7 +172,7 @@
     color: white;
     border: none;
     padding: 0.7rem 1.2rem;
-    border-radius: 4px;
+    border-radius: var(--border-radius-large);
     cursor: pointer;
     font-size: 0.95em;
     transition: background-color 0.2s;
@@ -196,4 +196,125 @@
     padding: 0.5rem;
     border-left: 3px solid var(--settings-accent-color); /* 左边框强调 */
     /*border-radius: 0 4px 4px 0;*/
+}
+
+/* frontend/src/components/Settings.css */
+
+/* ... (你已有的 .settings-page-container, .settings-title, .settings-section, .settings-section h2 等样式) ... */
+
+/* --- LLM Configuration Section Specific Styles --- */
+
+/* .settings-section h2 (已存在，确保其样式统一) */
+
+/* .settings-form-group (通用表单组样式，之前可能已定义) */
+.settings-form-group {
+    margin-bottom: 0.7rem; /* 组之间的间距 */
+}
+
+.settings-form-group label {
+    display: block;
+    font-size: 0.95em; /* 标签字体大小 */
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--settings-text-secondary-color); /* 使用次要文字颜色 */
+}
+
+/* .settings-input (通用输入框样式，之前可能已定义) */
+.settings-input {
+    display: flex;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95em; /* 输入框内文字大小 */
+    background-color: var(--input-bg-color);
+    color: var(--settings-text-secondary-color);
+    border: 1px solid var(--settings-border-color);
+    border-radius: var(--border-radius-large);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.settings-input::placeholder { /* 占位符样式 */
+    color: var(--text-secondary, #aaa); /* 使用次要文字颜色或更浅的灰色 */
+    opacity: 0.8;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: var(--input-focus-border-color); /* 使用主题强调色 */
+    box-shadow: 0 0 0 1px var(--input-focus-border-color, rgba(0, 123, 255, 0.25)); /* 聚焦时的外发光效果 */
+}
+
+.settings-input:disabled {
+    background-color: var(--bg-tertiary, #e9ecef); /* 禁用时的背景色 */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.settings-actions-group {
+    display: inline-flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    align-items: center;
+    text-align: center;
+}
+
+.settings-save-btn,
+.settings-test-btn {
+    background-color: var(--settings-accent-color); /* 使用主题强调色 */
+    color: var(--button-text-color, white);
+    border: none;
+    padding: 0.6rem 1.2rem; /* 按钮内边距 */
+    border-radius: var(--border-radius-large); /* 与输入框一致的圆角 */
+    cursor: pointer;
+    font-size: 1em; /* 按钮文字大小 */
+    font-weight: 400;
+    transition: background-color 0.2s, opacity 0.2s;
+    min-width: 160px; /* 给按钮一个合适的最小宽度 */
+    text-align: center;
+    display: inline-flex; /* 用于可能添加的加载指示器 */
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-save-btn:hover:not(:disabled),
+.settings-test-btn:hover:not(:disabled){
+    opacity: 0.85; /* 或者使用 --settings-accent-hover-color 变量 */
+}
+
+.settings-save-btn:disabled,
+.settings-test-btn:disabled{
+    background-color: var(--bg-disabled, #ccc);
+    color: var(--text-disabled, #888);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* (可选) 如果保存按钮内有加载指示器 (spinner) */
+.settings-save-btn .spinner {
+    width: 1em;
+    height: 1em;
+    border-width: 2px; /* Spinner 线条粗细 */
+    margin-right: 0.5rem; /* Spinner 和文字之间的间距 */
+    /* Spinner 颜色应与按钮文字颜色对比，或使用特定变量 */
+    /* border: 2px solid var(--button-text-color, rgba(255, 255, 255, 0.3)); */
+    /* border-top-color: var(--button-text-color, white); */
+}
+
+
+/* (可选) 为 LLM 配置表单添加一些额外的间距或分组感 */
+.settings-section form {
+    margin-top: 0.5rem; /* 表单与节标题的间距 */
+}
+
+/* (可选) 如果有错误消息显示在表单级别 */
+.form-error-message {
+    color: var(--toastify-color-error, #e74c3c); /* 使用错误颜色 */
+    font-size: 0.9em;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary, #ffebee); /* 浅红色背景 */
+    border: 1px solid var(--toastify-color-error, #e74c3c);
+    border-radius: 4px;
 }

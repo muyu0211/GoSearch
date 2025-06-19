@@ -14,40 +14,26 @@ import (
 	"time"
 )
 
-func TestGetUserDir(t *testing.T) {
-	err := service.InitializeConfig()
-	if err != nil {
-		t.Error(err)
-	}
-	t.Log(service.AppConf)
-
-	err = service.ChangeBootConfig("E:\\Tools")
-	if err != nil {
-		t.Error(err)
-	}
-	t.Log(service.BootConf)
-}
-
 func TestSetAppConfig(t *testing.T) {
 	newConf := &service.AppConfig{
 		AppName:       "GoSearch",
 		AppVersion:    "1.1.1",
-		CustomDataDir: "E:\\Tools\\SetUp",
+		CustomDataDir: "E:\\Tools\\GoSearch",
 		Language:      "en",
 		Theme:         "light",
 	}
-	err := service.InitializeConfig()
+	bootConf, appConf, err := service.EnsureConfigInitialized()
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(service.BootConf)
-	t.Log(service.AppConf)
-	if err = service.SetAppConfig(newConf); err != nil {
+	t.Log(bootConf)
+	t.Log(appConf)
+	if err = appConf.SetAppConfig(newConf); err != nil {
 		t.Log(err)
 		return
 	}
-	t.Log(service.AppConf)
-	if err = service.AppConf.ChangeAppConfig(); err != nil {
+	t.Log(appConf)
+	if err = appConf.StoreAppConfig(); err != nil {
 		t.Log(err)
 		return
 	}
@@ -216,22 +202,73 @@ func TestSearchFile(t *testing.T) {
 	var (
 		//targetInput = "2025"
 		//currDirPath = "E:"
-		targetInput = "Kits"
-		currDirPath = "D:"
+		targetInput = "size:<5MB type:jpg"
+		currDirPath = "E:\\Images\\Photos"
 		err         error
 	)
 
 	dirController := controller.NewDirController()
 	response, err := dirController.SearchItemFromInput(targetInput, currDirPath)
 	if err != nil {
+		t.Log(err)
 		return
 	}
 	for _, res := range response.Items {
-		t.Logf("找到: %s (大小: %d bytes, 类型: %v)\n", res.Path, res.Size, res.IsDir)
+		t.Logf("找到: %s (大小: %d B, 类型: %v)\n", res.Path, res.Size, res.IsDir)
 	}
 	t.Logf("文件个数: %d, 耗时: %v s", len(response.Items), float64(response.DurationNs)/1e9)
 }
 
 func Test(t *testing.T) {
 	t.Log(utils.Join("C:", "bb\\cc.txt"))
+}
+
+func TestLLM(t *testing.T) {
+	var (
+		query       = "帮我查找所有在2024年3月初之后2025年初之前修改过的word文档"
+		currDirPath = "E:\\Files"
+	)
+	dirController := controller.NewDirController()
+	if _, err := dirController.SearchItemFromLLM(query, currDirPath); err != nil {
+		t.Log(err)
+	}
+
+	//"model": "gpt-3.5-turbo",
+	//"base_url": "https://yibuapi.com/v1",
+	//"api_key": "sk-j7OCf0lG0cUI3rdy1TcIiNFikXBxCJM6TdRh3WPSMTMpxuNM",
+
+	//"model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+	//"base_url": "https://api.siliconflow.cn/v1",
+	//"api_key": "sk-wovnkrwsgkznyeikeiiotyusjpexlgliyxovzdgvhpaetcgb",
+
+	// DeepSeek
+	// "model": "",
+	// "base_url": "https://api.deepseek.com/v1"
+	// "api_key": "sk-8a6286aba8ad43f4ba12f7504f433acd"
+
+	//api := controller.NewAPI()
+	//t.Log(api.TestLLM())
+}
+
+func TestUserData(t *testing.T) {
+	//userData, err := service.GetUserData()
+	//if err != nil {
+	//	t.Log(err)
+	//}
+	//t.Log(userData)
+	api := controller.NewAPI()
+	userData := &service.UData{
+		Model:   "123",
+		BaseURL: "123",
+		ApiKey:  "123",
+	}
+	err := api.SetUserData(userData)
+	if err != nil {
+		return
+	}
+	//data, err := api.GetUserData()
+	//if err != nil {
+	//	return
+	//}
+	//t.Log(data)
 }

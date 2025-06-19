@@ -94,7 +94,7 @@ const RightClickModel = React.forwardRef(({  item, isVisible, position, onDouble
                 toast.info('新建文件')
                 break;
             case 'open':
-                onDoubleClick(item); // 复用双击逻辑
+                onDoubleClick(item);
                 onClose();
                 break;
             case 'copy_path':
@@ -107,6 +107,9 @@ const RightClickModel = React.forwardRef(({  item, isVisible, position, onDouble
                     onClose();
                 }
                 break;
+            case 'open_file_location':
+                // TODO: 打开文件所在位置
+                break
             case 'copy_file':
                 toast.info(t('Copy file "{{name}}" (not yet implemented)', { name: item.name }));
                 // TODO: 实现复制文件逻辑 (可能需要后端支持，或前端模拟剪贴板)
@@ -160,6 +163,7 @@ const RightClickModel = React.forwardRef(({  item, isVisible, position, onDouble
     } else {
         menuItems.push({ label: t('Open'), action: 'open' });
         menuItems.push({ label: t('Copy Path'), action: 'copy_path' });
+        menuItems.push({ label: t('Open the file location'), action: 'open_file_location'})
         menuItems.push({ label: t('Copy File'), action: 'copy_file' });
         menuItems.push({ label: t('Rename'), action: 'rename' });
         menuItems.push({ label: t('Delete'), action: 'delete' });

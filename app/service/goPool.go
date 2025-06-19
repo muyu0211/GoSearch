@@ -106,13 +106,18 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 		return
 	}
 	for _, entry := range entries {
-		entryInfo, _ := entry.Info()
+		entryInfo, err := entry.Info()
+		if err != nil {
+			continue
+		}
+
+		fileModTime := entryInfo.ModTime().Unix()
 		entryName := entryInfo.Name()
 
 		// 首先进行通配符匹配
 		if t.params.GlobPattern != "" {
-			match, err := filepath.Match(t.params.GlobPattern, entryName)
-			if err != nil || !match {
+			matched, err := filepath.Match(t.params.GlobPattern, entryName)
+			if err != nil || !matched {
 				continue
 			}
 		}
@@ -129,7 +134,13 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 			extIndex := strings.LastIndex(entryName, ".")
 			if extIndex != -1 {
 				entryType := entryName[strings.LastIndex(entryName, ".")+1:]
-				if _, ok := t.params.FileType[entryType]; !ok {
+				flag := false
+				for _, typ := range t.params.FileType {
+					if entryType == typ {
+						flag = true
+					}
+				}
+				if !flag {
 					continue
 				}
 			} else {
@@ -138,12 +149,27 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 		}
 
 		// 对大小进行匹配
-		if t.params.MinSize != 0 && t.params.MaxSize != 0 {
+		if t.params.MinSize != 0 || t.params.MaxSize != 0 {
+			if entry.IsDir() { // 不匹配文件夹
+				continue
+			}
 			size := uint64(entryInfo.Size())
 			if t.params.MinSize > 0 && size < t.params.MinSize {
 				continue
 			}
 			if t.params.MaxSize > 0 && size > t.params.MaxSize {
+				continue
+			}
+		}
+
+		// 对日期进行匹配
+		if t.params.ModifiedBefore != nil {
+			if fileModTime < t.params.ModifiedBefore.Unix() {
+				continue
+			}
+		}
+		if t.params.ModifiedAfter != nil {
+			if fileModTime > t.params.ModifiedAfter.Unix() {
 				continue
 			}
 		}
@@ -161,7 +187,6 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 }
 
 func (p *SearchPool) Results() ([]*FileSystemEntry, error) {
-	//log.Println("结果: ", p.results)
 	res := make([]*FileSystemEntry, 0)
 	for entry := range p.results {
 		res = append(res, entry)

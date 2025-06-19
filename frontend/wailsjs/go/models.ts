@@ -209,6 +209,24 @@ export namespace service {
 	        this.cpu_cores = source["cpu_cores"];
 	    }
 	}
+	export class UData {
+	    model: string;
+	    base_url: string;
+	    api_key: string;
+	    is_open_ai: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new UData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.model = source["model"];
+	        this.base_url = source["base_url"];
+	        this.api_key = source["api_key"];
+	        this.is_open_ai = source["is_open_ai"];
+	    }
+	}
 
 }
 

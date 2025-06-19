@@ -150,7 +150,6 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 
 // SearchItemFromInput 处理用户搜索框输入
 func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*SearchResponse, error) {
-	log.Println("currDirPath:", currDirPath)
 	var (
 		searchParams *service.SearchParams
 		items        []*service.FileSystemEntry
@@ -164,12 +163,33 @@ func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*
 	if searchParams, err = service.ParseParams(query, currDirPath); err != nil {
 		return nil, err
 	}
-
+	log.Println("查询条件:", searchParams)
 	if items, err = service.SearchItems(searchParams); err != nil {
 		return nil, err
 	}
 
-	// TODO: check结果是否与查询要求相符
+	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
+}
+
+func (d *DirController) SearchItemFromLLM(query string, currDirPath string) (*SearchResponse, error) {
+	var (
+		searchParams *service.SearchParams
+		items        []*service.FileSystemEntry
+		err          error
+	)
+	if currDirPath == "" {
+		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
+	}
+
+	if searchParams, err = service.ParseParamsFromLLM(query); err != nil {
+		return nil, err
+	}
+	searchParams.BaseDir = currDirPath
+	start := time.Now()
+	if items, err = service.SearchItems(searchParams); err != nil {
+		return nil, err
+	}
+
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 

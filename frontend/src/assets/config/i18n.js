@@ -127,9 +127,10 @@ const resources = {
             "Properties": "Properties",
             "Path copied to clipboard!": "Path copied to clipboard!",
             "'Failed to copy path.": "'Failed to copy path.",
+            "Open the file location": "Open the file location",
 
             "Name cannot be empty.": "Name cannot be empty.",
-            "Failed to rename item. Please try again.": "Failed to rename item. Please try again.",
+            "Failed to rename item. Please try again.": "Failed to rename item. Please try again",
             "Current name": "Current name",
             "New name": "New name",
             "Renaming": "Renaming",
@@ -142,10 +143,23 @@ const resources = {
             "file": "file",
 
             "Search failed: {{message}}": "Search failed: {{message}}",
-            "Found {{count}} items in {{duration}}s.": "Found {{count}} items in {{duration}}s.",
+            "Found {{count}} items in {{duration}}s.": "Found {{count}} items in {{duration}}s",
             "Please enter a search term.": "Please enter a search term.",
-            "Search Results for \"{{query}}\" in {{path}} ": "Search Results for \"{{query}}\" in {{path}} ",
-            "No items found matching your search criteria.": "No items found matching your search criteria.",
+            "Search Results for \"{{query}}\" in {{path}} ": "Search Results for \"{{query}}\" in {{path}}",
+            "No items found matching your search criteria.": "No items found matching your search criteria",
+
+            "Switch to Standard Search": "Switch to Standard Search",
+            "Switch to LLM Search": "Switch to LLM Search",
+
+            "LLM Configuration": "LLM Configuration",
+            "Enter your LLM API Key": "Enter your LLM API Key",
+            "API Key": "API Key",
+            "Model Name": "Model Name",
+            "e.g., gpt-3.5-turbo, claude-2": "e.g., gpt-3.5-turbo, claude-2",
+            "Base URL": "Base URL",
+            "e.g., https://api.openai.com/v1": "e.g., https://api.openai.com/v1",
+            "Saving...": "Saving...",
+            "Save LLM Settings": "Save LLM Settings",
         }
     },
     zh: { // 中文翻译
@@ -259,7 +273,8 @@ const resources = {
             "Copy File": "复制文件",
             "Properties": "属性",
             "Path copied to clipboard!": "路径复制成功",
-            "'Failed to copy path.": "复制失败",
+            "Failed to copy path.": "复制失败",
+            "Open the file location": "打开文件所在位置",
 
             "Name cannot be empty.": "名字不能为空",
             "Failed to rename item. Please try again.": "重命名失败, 请重试",
@@ -279,6 +294,19 @@ const resources = {
             "Please enter a search term.": "请输入搜索条件",
             "Search Results for \"{{query}}\" in {{path}} ": "在{{path}}路径下搜索\"{{query}}\"",
             "No items found matching your search criteria.": "未找到符合搜索条件的项目",
+
+            "Switch to Standard Search": "切换至标准搜索",
+            "Switch to LLM Search": "切换至大模型搜索",
+
+            "LLM Configuration": "大模型配置",
+            "API Key": "API Key",
+            "Enter your LLM API Key": "输入API KEY",
+            "Model Name": "模型名称",
+            "e.g., gpt-3.5-turbo, claude-2": "例如, gpt-3.5-turbo, claude-2",
+            "Base URL": "Base URL",
+            "e.g., https://api.openai.com/v1": "例如, https://api.openai.com/v1",
+            "Saving...": "保存中...",
+            "Save LLM Settings": "保存模型配置",
         }
     }
 };

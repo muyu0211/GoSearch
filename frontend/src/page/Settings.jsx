@@ -6,31 +6,52 @@ import {toast} from "react-toastify";
 import {
     OpenDirectory,
 } from '../../wailsjs/go/controller/DirController';
-import {GetAppConfig, GetBootConfig, SetAppConfig, SetBootConfig} from '../../wailsjs/go/controller/API';
+import {
+    GetAppConfig,
+    GetBootConfig,
+    GetUserData,
+    SetAppConfig,
+    SetBootConfig,
+    SetUserData,
+    TestLLM,
+} from '../../wailsjs/go/controller/API';
 
-function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitialAppConfig }) {
+function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitialAppConfig, initialUserData, setInitialUserData }) {
     const { t, i18n } = useTranslation();
     const [appConfig, setAppConfig] = useState(null); // 存储从后端加载的 AppConfig
     const [bootConfig, setBootConfig] = useState(null); // 存储从后端加载的 BootConfig
-    const [directories, setDirectories] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // 统一的加载状态
-    const [isUpdatingDirs, setIsUpdatingDirs] = useState(false); // 用于添加/删除目录时的 loading
+    const [userData, setUserData] = useState(null)
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUpdatingDirs, setIsUpdatingDirs] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
     const [showLanguageConfirm, setShowLanguageConfirm] = useState(false);
     const [targetLanguage, setTargetLanguage] = useState('');
-    const [isChangingConfigDir, setIsChangingConfigDir] = useState(false); // 新增状态
+    const [isChangingConfigDir, setIsChangingConfigDir] = useState(false);
+    // --- LLM 配置相关的 State ---
+    const [apiKey, setApiKey] = useState('');
+    const [model, setModel] = useState('');
+    const [baseURL, setBaseURL] = useState('');
+    const [isSavingUserData, setIsSavingUserData] = useState(false);
+    const [isTestingLLM, setIsTestingLLM] = useState(false);
 
     // 加载页面数据
     const fetchPageData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [appConf, bootConf] = await Promise.all([
+            const [appConf, bootConf, userData] = await Promise.all([
                 GetAppConfig(),
                 GetBootConfig(),
+                GetUserData(),
             ]);
             setAppConfig(appConf || {});
             setBootConfig(bootConf || {});
-            // setDirectories(dirs || []);
+            setUserData(userData || {})
+
+            if (userData) {
+                setApiKey(userData.api_key || '')
+                setModel(userData.model || '');
+                setBaseURL(userData.base_url || '');
+            }
         } catch (err) {
             toast.error(t("Could not load settings data."))
         } finally {
@@ -53,6 +74,7 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
     // 修改配置文件目录
     const handleChangeConfigDir = async () => {
         try {
+            // 打开目录选择器
             const newConfigDir = await OpenDirectory(bootConfig?.custom_config_dir);
             if (newConfigDir) {
                 const currentMasterDir = bootConfig?.custom_config_dir;
@@ -76,42 +98,37 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
         }
     };
 
-    const handleAddDirectoryUI = async () => {
+    // 保存大模型配置
+    const handleLLMChange = async (event) => {
+        if (event) event.preventDefault()
         try {
-            const selectedPath = await BrowserOpenDirectory(); // <--- 修改这里
-            if (selectedPath) { // 用户选择了目录，selectedPath 是目录路径字符串
-                setIsUpdatingDirs(true);
-                // await AddIndexedDirectory(selectedPath);
-                // 重新获取数据以更新UI
-                const appConf = await GetAppConfig();
-                const bootConf = await GetBootConfig();
-                // const dirs = await GetInitialDir();
-                // setAppConfig(appConf || {});
-                // setBootConfig(bootConf || {});
-                // setDirectories(dirs || []);
-                // if (onDirectoriesChanged) onDirectoriesChanged();
-            } else {
-                // 用户取消了选择，selectedPath 会是空字符串或 undefined/null
-                console.log("User cancelled directory selection.");
+            const userDataToSave = {
+                ...(userData || {}),
+                api_key: apiKey.trim(),
+                model: model.trim(),
+                base_url: baseURL.trim(),
             }
-        } catch (err) {
-            console.error("Error adding directory:", err);
+            console.log("userDataToSave: ",userDataToSave)
+            await SetUserData(userDataToSave);
+            toast.success(t('User Data saved successfully!'));
+        } catch (error) {
+            console.error("Error saving LLM configuration:", error);
+            const errMsg = error && typeof error.message === 'string' ? error.message : t('Failed to save LLM configuration.');
+            toast.error(errMsg)
+            toast.error(errMsg);
         } finally {
-            setIsUpdatingDirs(false);
+            setIsSavingUserData(false);
         }
-    };
+    }
 
-    const handleRemoveDirectoryUI = async (dirToRemove) => {
-        setIsUpdatingDirs(true);
+    const handleTestLLMConnection = async () => {
+        setIsTestingLLM(true);
+        toast.info(t('Testing LLM connection...')); // 给用户一个即时反馈
         try {
-            // await RemoveIndexedDirectory(dirToRemove); // 后端应保存 AppConfig
-            await fetchPageData(); // 重新获取所有数据
-            // if (onDirectoriesChanged) onDirectoriesChanged();
+            await TestLLM(); // 后端 TestLLM 会自己弹窗
         } catch (err) {
-            console.error("Error removing directory:", err);
-            toast.error(t("Failed to remove directory."));
         } finally {
-            setIsUpdatingDirs(false);
+            setIsTestingLLM(false);
         }
     };
 
@@ -126,7 +143,7 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
             toast.success(t('Language Changed successfully!'));
             // 实时保存语言到后端 (如果你采用这种策略)
             let configToSave = {
-                ...(initialAppConfig || {}),
+                ...(appConfig || {}),
                 language: newLang,
             };
 
@@ -177,6 +194,57 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
             </section>
 
             <section className="settings-section">
+                <h2>{t('LLM Configuration')}</h2>
+                <form onSubmit={handleLLMChange}>
+                    <div className="settings-form-group">
+                        <label htmlFor="llmApiKey">{t('API Key')}:</label>
+                        <input
+                            type="text"
+                            id="apiKey"
+                            className="settings-input"
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)}
+                            placeholder={t('Enter your LLM API Key')}
+                            // disabled={isSavingUserData || isLoading}
+                        />
+                    </div>
+                    <div className="settings-form-group">
+                        <label htmlFor="llmModel">{t('Model Name')}:</label>
+                        <input
+                            type="text"
+                            id="model"
+                            className="settings-input"
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                            placeholder={t('e.g., gpt-3.5-turbo, claude-2')}
+                            // disabled={isSavingLLMConfig || isLoading}
+                        />
+                    </div>
+                    <div className="settings-form-group">
+                        <label htmlFor="llmBaseURL">{t('Base URL')}:</label>
+                        <input
+                            type="text"
+                            id="baseURL"
+                            className="settings-input"
+                            value={baseURL}
+                            onChange={(e) => setBaseURL(e.target.value)}
+                            placeholder={t('e.g., https://api.openai.com/v1')}
+                        />
+                    </div>
+                    <div className="settings-actions-group"> {/* 用于排列保存和测试按钮 */}
+                        <button type="submit" className="settings-save-btn" disabled={isSavingUserData || isLoading}>
+                            {isSavingUserData ? t('Saving...') : t('Save LLM Settings')}
+                        </button>
+                        <button type="button" className="settings-test-btn"
+                                onClick={handleTestLLMConnection}
+                                disabled={isTestingLLM || isLoading || isSavingUserData || !apiKey.trim()}>
+                            {isTestingLLM ? t('Testing...') : t('Test Connection')}
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section className="settings-section">
                 <h2>{t('Data and Configuration Directory')}</h2>
                 <div className="dir-path-display" title={bootConfig?.custom_config_dir}>
                     {bootConfig?.custom_config_dir || t('Loading...')}
@@ -191,32 +259,6 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
                     disabled={isLoading || isChangingConfigDir}
                 >
                     {isChangingConfigDir ? t('Changing') : t('Change Directory')}
-                </button>
-            </section>
-
-            <section className="settings-section">
-                <h2>{t('Indexed Directories')}</h2>
-                {isUpdatingDirs && <p>{t('Updating directories...')}</p>}
-                {!isUpdatingDirs && directories.length === 0 && (
-                    <p className="no-dirs-message">{t('No directories are currently indexed.')}</p>
-                )}
-                <ul className="directory-list-settings">
-                    {directories.map(dir => (
-                        <li key={dir} className="directory-item-settings">
-                            <span className="dir-path" title={dir}>{dir}</span>
-                            <button
-                                onClick={() => handleRemoveDirectoryUI(dir)}
-                                className="remove-dir-btn"
-                                disabled={isUpdatingDirs}
-                                title={t('Remove directory')}
-                            >
-                                ×
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-                <button onClick={handleAddDirectoryUI} className="add-dir-btn-settings" disabled={isUpdatingDirs}>
-                    {t('Add Directory...')}
                 </button>
             </section>
 
@@ -263,7 +305,7 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
             <ConfirmModal
                 isOpen={showLanguageConfirm}
                 title={t('Confirm Language Change')}
-                message={t('Are you sure you want to change the language to {{lang}}?', { lang: targetLanguage === 'en' ? 'English' : '中文' })}
+                message={t('Are you sure you want to change the language to {{lang}}?', {lang: targetLanguage === 'en' ? 'English' : '中文'})}
                 onConfirm={confirmChangeLanguage}
                 onCancel={cancelChangeLanguage}
                 confirmText={t('Change')}

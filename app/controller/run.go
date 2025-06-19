@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"GoSearch/app/service"
 	"context"
 	"embed"
 	"fmt"
@@ -11,18 +10,12 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"log"
 )
 
 func GoSearchRun(assets embed.FS, port int, icon []byte) {
 	var (
 		err error
 	)
-	// 使用引导配置文件进行app启动
-	if err = service.EnsureInitialized(); err != nil {
-		fmt.Println("Get AppConfig Error:", err)
-		return
-	}
 	api := NewAPI()
 	dirController := NewDirController()
 
@@ -40,11 +33,8 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 			dirController.setCtx(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
-			if err = service.AppConf.ChangeAppConfig(); err != nil {
-				log.Printf("Shutdown error: %v", err.Error())
-			}
+			api.CloseResource()
 			dirController.pathCache.StopJanitor()
-			fmt.Println("GoSearch Shutdown!!!")
 		},
 		Bind: []interface{}{
 			api,
@@ -54,7 +44,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 			TitleBar: mac.TitleBarDefault(),
 			About: &mac.AboutInfo{
 				Title:   "GoSearch",
-				Message: "wails2演示程序",
+				Message: "GOSearch",
 				Icon:    icon,
 			},
 			WebviewIsTransparent: false,

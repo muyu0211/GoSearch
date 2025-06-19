@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -49,8 +51,8 @@ func EnsureDirExists(dirPath string, perms os.FileMode) error {
 	return nil
 }
 
-// StoreConfig 写文件操作
-func StoreConfig(path string, data []byte) error {
+// StoreFile 写文件操作
+func StoreFile(path string, data []byte) error {
 	if path == "" {
 		return fmt.Errorf("path is empty")
 	}
@@ -62,9 +64,15 @@ func StoreConfig(path string, data []byte) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied to write file at %s: %v", path, err)
 		}
-		return fmt.Errorf("StoreConfig: failed to write config to %s: %w", path, err)
+		return fmt.Errorf("StoreFile: failed to write config to %s: %w", path, err)
 	}
 	return nil
+}
+
+// TODO:
+func RemoveFile(path string) error {
+	return nil
+
 }
 
 func GetParentPath(os string, path string) (string, string) {
@@ -82,4 +90,15 @@ func Join(elem ...string) string {
 		elem[0] += "\\"
 	}
 	return filepath.Join(elem...)
+}
+
+// UnmarshalJSON 解析json字符串
+func UnmarshalJSON(response string, instance interface{}) error {
+	decoder := json.NewDecoder(strings.NewReader(response))
+	if err := decoder.Decode(&instance); err == io.EOF {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return nil
 }

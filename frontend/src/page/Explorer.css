@@ -338,3 +338,80 @@
 .full-page-loader {
     min-height: calc(100vh - 150px); /* 示例：占据大部分页面 */
 }
+
+/* 添加过渡动画 */
+.explorer-item-list .item-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.explorer-item-list .item-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+}
+
+/* 骨架屏基础样式 */
+.explorer-loading-skeleton {
+    padding: 16px;
+}
+
+.skeleton-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    height: 60px; /* 与列表项高度一致 */
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    margin: 0 16px;
+    border-radius: var(--border-radius-large);
+    background-color: var(--scrollbar-thumb-bg);
+}
+
+.skeleton-content {
+    flex: 1;
+    height: 32px;
+}
+
+.skeleton-line {
+    height: 15px;
+    margin-bottom: 8px;
+    background-color: var(--scrollbar-thumb-bg);
+    border-radius: 4px;
+}
+
+.skeleton-line.line-1 {
+    width: 95%;
+}
+
+.skeleton-line.line-2 {
+    width: 80%;
+}
+
+/* 闪光动画效果 */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.skeleton-shimmer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            rgba(42, 35, 35, 0) 0%,
+            rgba(49, 49, 49, 0.1) 60%,
+            rgba(68, 53, 53, 0) 100%
+    );
+    animation: shimmer 2s infinite alternate ease-in-out;
+}

@@ -12,18 +12,13 @@ import (
 	"sync"
 )
 
-const (
-	configFileName     = "config.json"
-	bootConfigFileName = "boot_config.json"
-)
-
 // 单例模式
 var (
 	once     sync.Once      // 用于确保初始化只执行一次
 	aLock    sync.RWMutex   // 读写配置文件时加锁
 	bLock    sync.RWMutex   // 读写引导文件时加锁
-	BootConf *BootAppConfig // 引导配置
-	AppConf  *AppConfig     // 主配置文件
+	bootConf *BootAppConfig // 引导配置
+	appConf  *AppConfig     // 主配置文件
 )
 
 // AppConfig 配置文件结构
@@ -39,16 +34,16 @@ type BootAppConfig struct {
 	CustomConfigDir string `json:"custom_config_dir" mapstructure:"custom_config_dir"`
 }
 
-// EnsureInitialized 确保单例对象只被初始化一次
-func EnsureInitialized() error {
+// EnsureConfigInitialized 确保单例对象只被初始化一次
+func EnsureConfigInitialized() (*BootAppConfig, *AppConfig, error) {
 	var err error
 	once.Do(func() {
-		err = InitializeConfig()
+		err = initializeConfig()
 	})
-	return err
+	return bootConf, appConf, err
 }
 
-func InitializeConfig() error {
+func initializeConfig() error {
 	var (
 		bootConfigDir string
 		err           error
@@ -58,18 +53,18 @@ func InitializeConfig() error {
 		return err
 	}
 	// 2. 解析引导文件
-	if BootConf, err = GetBootConfig(bootConfigDir); err != nil {
+	if bootConf, err = GetBootConfig(bootConfigDir); err != nil {
 		return err
 	}
-	if BootConf == nil {
+	if bootConf == nil {
 		return fmt.Errorf("boot config is nil after loading/creation")
 	}
 
 	// 3. 解析主配置文件
-	if AppConf, err = GetAppConfig(BootConf.CustomConfigDir); err != nil {
+	if appConf, err = GetAppConfig(bootConf.CustomConfigDir); err != nil {
 		return err
 	}
-	if AppConf == nil {
+	if appConf == nil {
 		return fmt.Errorf("main app config is nil after loading/creation")
 	}
 	return nil
@@ -93,7 +88,7 @@ func GetBootConfigDir() (string, error) {
 // GetBootConfig 获取引导文件
 func GetBootConfig(bootConfigDir string) (*BootAppConfig, error) {
 	var (
-		bootConfigPath = filepath.Join(bootConfigDir, bootConfigFileName)
+		bootConfigPath = filepath.Join(bootConfigDir, utils.BootConfigFileName)
 		bootConf       = &BootAppConfig{}
 		data           []byte
 		exist          bool
@@ -118,7 +113,7 @@ func GetBootConfig(bootConfigDir string) (*BootAppConfig, error) {
 	if data, err = json.MarshalIndent(defaultBootConf, "", " "); err != nil {
 		return nil, err
 	}
-	if err = utils.StoreConfig(bootConfigPath, data); err != nil {
+	if err = utils.StoreFile(bootConfigPath, data); err != nil {
 		return nil, err
 	}
 	return defaultBootConf, nil
@@ -127,7 +122,7 @@ func GetBootConfig(bootConfigDir string) (*BootAppConfig, error) {
 // GetAppConfig 获取主配置文件
 func GetAppConfig(configDir string) (*AppConfig, error) {
 	var (
-		configPath = filepath.Join(configDir, configFileName)
+		configPath = utils.Join(configDir, utils.ConfigFileName)
 		conf       = &AppConfig{}
 		exist      bool
 		err        error
@@ -143,7 +138,7 @@ func GetAppConfig(configDir string) (*AppConfig, error) {
 			AppVersion:    utils.AppVersion,
 			Theme:         utils.Theme,
 			Language:      utils.Language,
-			CustomDataDir: filepath.Join(configDir, "data"),
+			CustomDataDir: configDir, // 用户数据文件存放至同一文件夹下
 		}
 		if data, err = json.MarshalIndent(defaultConf, "", " "); err != nil {
 			return nil, fmt.Errorf("failed to marshal default main config: %w", err)
@@ -151,7 +146,8 @@ func GetAppConfig(configDir string) (*AppConfig, error) {
 		if err = utils.EnsureDirExists(configDir, 0755); err != nil {
 			return nil, err
 		}
-		if err = utils.StoreConfig(configPath, data); err != nil {
+		// 保存文件
+		if err = utils.StoreFile(configPath, data); err != nil {
 			return nil, err
 		}
 		return defaultConf, nil
@@ -159,26 +155,25 @@ func GetAppConfig(configDir string) (*AppConfig, error) {
 	// 存在则解析
 	if err = ParseAppConfig(configPath, conf); err != nil {
 		log.Printf("Parse config: %s error.", configPath)
-		// TODO: 考虑解析失败时, 返回默认配置
 		return nil, err
 	}
 	return conf, nil
 }
 
 // SetAppConfig 修改主配置信息
-func SetAppConfig(newConf *AppConfig) error {
+func (appConf *AppConfig) SetAppConfig(newConf *AppConfig) error {
 	var (
 		err error
 	)
-	if err = EnsureInitialized(); err != nil {
-		return fmt.Errorf("BootConf is nil")
+	if _, _, err = EnsureConfigInitialized(); err != nil {
+		return fmt.Errorf("bootConf is nil")
 	}
 
 	// 修改主配置信息时加锁
 	aLock.Lock()
 	defer aLock.Unlock()
 
-	curConfVal := reflect.ValueOf(AppConf).Elem()
+	curConfVal := reflect.ValueOf(appConf).Elem()
 	newConfVal := reflect.ValueOf(newConf).Elem()
 
 	if newConfVal.Kind() != reflect.Struct || newConfVal.Kind() != curConfVal.Kind() {
@@ -200,8 +195,8 @@ func SetAppConfig(newConf *AppConfig) error {
 	return nil
 }
 
-// ChangeAppConfig 修改主配置文件
-func (conf *AppConfig) ChangeAppConfig() error {
+// StoreAppConfig 保存主配置文件
+func (appConf *AppConfig) StoreAppConfig() error {
 	var (
 		data []byte
 		err  error
@@ -210,24 +205,24 @@ func (conf *AppConfig) ChangeAppConfig() error {
 	aLock.Lock()
 	defer aLock.Unlock()
 
-	if BootConf == nil || conf == nil {
-		return fmt.Errorf("BootConf/Conf is nil")
+	if bootConf == nil || appConf == nil {
+		return fmt.Errorf("bootConf/Conf is nil")
 	}
-	if data, err = json.MarshalIndent(conf, "", " "); err != nil {
+	if data, err = json.MarshalIndent(appConf, "", " "); err != nil {
 		return fmt.Errorf("failed to marshal default main config: %w", err)
 	}
 	if data == nil || len(data) == 0 || string(data) == "null" {
 		return fmt.Errorf("data is nil")
 	}
 	// 保存文件
-	if err = utils.StoreConfig(filepath.Join(BootConf.CustomConfigDir, configFileName), data); err != nil {
+	if err = utils.StoreFile(filepath.Join(bootConf.CustomConfigDir, utils.ConfigFileName), data); err != nil {
 		return err
 	}
 	return nil
 }
 
-// ChangeBootConfig 修改引导文件(配置文件目录)
-func ChangeBootConfig(desDir string) error {
+// SetBootConfig 修改引导文件(配置文件目录)
+func (bootConf *BootAppConfig) SetBootConfig(desDir string) error {
 	var (
 		bootDir string
 		data    []byte
@@ -249,19 +244,21 @@ func ChangeBootConfig(desDir string) error {
 			return err
 		}
 	}
-	BootConf.CustomConfigDir = desDir
+	bootConf.CustomConfigDir = desDir
 	if bootDir, err = GetBootConfigDir(); err != nil {
 		log.Printf("Get Boot Config Dir Error")
 		return err
 	}
-	if data, err = json.MarshalIndent(BootConf, "", " "); err != nil {
+	if data, err = json.MarshalIndent(bootConf, "", " "); err != nil {
 		return fmt.Errorf("failed to marshal default main config: %w", err)
 	}
 	// 修改文件
-	if err = utils.StoreConfig(filepath.Join(bootDir, bootConfigFileName), data); err != nil {
+	if err = utils.StoreFile(filepath.Join(bootDir, utils.BootConfigFileName), data); err != nil {
 		log.Printf(err.Error())
 		return err
 	}
+
+	// TODO: 将用户当前的文件移动到修改后的目录下
 	return nil
 }
 

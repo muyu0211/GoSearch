@@ -19,7 +19,7 @@ type SearchParams struct {
 	IsFile         bool   // 标记是否明确搜索文件
 	IsDir          bool   // 标记是否明确搜索目录
 	GlobPattern    string // 通配符模式
-	FileType       map[string]struct{}
+	FileType       []string
 	MinSize        uint64
 	MaxSize        uint64
 	ModifiedAfter  *time.Time
@@ -35,7 +35,7 @@ func SearchItems(searchParams *SearchParams) ([]*FileSystemEntry, error) {
 		err        error
 	)
 
-	searchPool = NewSearchPool(16)
+	searchPool = NewSearchPool(32)
 	searchPool.Start(searchParams) // 启动搜索
 
 	if result, err = searchPool.Results(); err != nil {
@@ -53,7 +53,7 @@ func ParseParams(input, currDirPath string) (*SearchParams, error) {
 	searchParams := &SearchParams{
 		BaseDir:    currDirPath,
 		SearchTerm: strings.ToLower(input),
-		FileType:   make(map[string]struct{}),
+		FileType:   make([]string, 0),
 		MinSize:    0,
 		MaxSize:    0,
 	}
@@ -81,7 +81,7 @@ func ParseParams(input, currDirPath string) (*SearchParams, error) {
 		},
 		{
 			Name:    "size",
-			Pattern: regexp.MustCompile(`size:\s*((?:[<>=]+\d+(?:\.\d+)?[BKMGTbkmgt]?\s*)+)`),
+			Pattern: regexp.MustCompile(`size:\s*((?:[<>=]+\s*\d+(?:\.\d+)?\s*(?:[BKMGT]?[Bb]?[Yy]?[Tt]?[Ee]?[Ss]?)?\s*)+)`),
 			Handler: handleSizeFilter,
 		},
 		{
@@ -98,6 +98,7 @@ func ParseParams(input, currDirPath string) (*SearchParams, error) {
 			isPattern = true
 			if err := p.Handler(searchParams, match); err != nil {
 				log.Printf("Parse %s error", p.Name)
+				return nil, err
 			}
 			input = strings.Replace(input, match[0], "", 1)
 		}
@@ -126,8 +127,9 @@ func handleTypeFilter(params *SearchParams, match []string) error {
 		return r == ',' || unicode.IsSpace(r)
 	})
 	for _, t := range types {
-		t = strings.TrimLeft(t, ".") // 去除首位的.
-		params.FileType[strings.TrimSpace(strings.ToLower(t))] = struct{}{}
+		t = strings.TrimLeft(t, ".") // 去除首位的'.'
+		params.FileType = append(params.FileType, strings.TrimSpace(strings.ToLower(t)))
+		//params.FileType[strings.TrimSpace(strings.ToLower(t))] = struct{}{}
 	}
 	return nil
 }
@@ -140,14 +142,14 @@ func handleSizeFilter(params *SearchParams, match []string) error {
 
 	for _, cond := range conditions {
 		// 匹配操作符、数值和单位
-		re := regexp.MustCompile(`^([<>=]+)(\d+(?:\.\d+)?)([BKMGTbkmgt]?)$`)
-		parts := re.FindStringSubmatch(cond)
+		re := regexp.MustCompile(`^([<>=]+)(\d+(?:\.\d+)?)([BKMGT]?[bB]?)$`)
+		parts := re.FindStringSubmatch(strings.ToUpper(cond))
 		if len(parts) != 4 {
 			return fmt.Errorf("无效的大小条件: %s", cond)
 		}
 		operator := parts[1]
 		valueStr := parts[2]
-		unit := strings.ToUpper(parts[3])
+		unit := parts[3]
 
 		// 验证操作符
 		if operator != ">" && operator != "<" && operator != ">=" && operator != "<=" && operator != "=" {
@@ -161,15 +163,12 @@ func handleSizeFilter(params *SearchParams, match []string) error {
 		}
 
 		// 验证单位
-		if unit != "" && unit != "B" && unit != "K" && unit != "M" && unit != "G" && unit != "T" {
+		u := unit[:1]
+		if u != "" && u != "B" && u != "K" && u != "M" && u != "G" && u != "T" {
 			return fmt.Errorf("invalid unit: %s", unit)
 		}
 
-		// 设置默认单位为字节
-		if unit == "" {
-			unit = "B"
-		}
-		size := uint64(value * float64(multipliers[unit]))
+		size := uint64(value * float64(multipliers[u]))
 
 		switch operator {
 		case ">=":
@@ -179,7 +178,7 @@ func handleSizeFilter(params *SearchParams, match []string) error {
 		case "<=":
 			params.MaxSize = size
 		case "<":
-			params.MaxSize = size + 1
+			params.MaxSize = size - 1
 		default:
 			params.MinSize = size
 			params.MaxSize = size

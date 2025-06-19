@@ -10,22 +10,23 @@ import './App.css';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { ToastContainer, toast } from 'react-toastify';
 import { I18nextProvider, useTranslation } from 'react-i18next';
-import { GetAppConfig, SetAppConfig } from '../wailsjs/go/controller/API';
+import { GetAppConfig, SetAppConfig, GetUserData } from '../wailsjs/go/controller/API';
 import { GetDiskInfo } from '../wailsjs/go/controller/DirController';
 
 function AppContent() {
     const { t, i18n } = useTranslation(); // 获取翻译函数
     const { currentPage, navigateTo } = useNavigation();
-    const [initialAppConfig, setInitialAppConfig] = useState(null); // 存储从后端加载的完整配置
+    const [initialAppConfig, setInitialAppConfig] = useState(null); // 存储完整配置
+    const [initialUserData, setInitialUserData] = useState(null); // 存储用户数据
     const [isLoading, setIsLoading] = useState(true);
     const [theme, setTheme] = useState(() => localStorage.getItem('appTheme') || 'light');
 
     // 从后端获取数据
     const fetchInitialData = useCallback(async () => {
         try {
-            const [diskInfos] = await Promise.all([
-                // GetAppStatus(),
-                GetDiskInfo(),
+            const [userData] = await Promise.all([
+                // GetDiskInfo(),
+                GetUserData(),
             ]);
         } catch (error) {
             toast.error(t("Error fetching app status/dirs:", error));
@@ -34,7 +35,7 @@ function AppContent() {
         }
     }, [t]);
 
-    // --- 应用启动时加载初始配置 ---
+    // --- 应用启动时加载初始配置和用户数据 ---
     useEffect(() => {
         const loadInitialConfig = async () => {
             try {
@@ -57,7 +58,7 @@ function AppContent() {
         loadInitialConfig();
     }, [fetchInitialData]);
 
-    //  更换主题
+    // 更换主题
     const handleThemeChange = async (newTheme) => {
         setTheme(newTheme);
         try {
@@ -102,6 +103,8 @@ function AppContent() {
                         onChangeTheme={handleThemeChange}
                         initialAppConfig={initialAppConfig}
                         setInitialAppConfig={setInitialAppConfig}
+                        initialUserData={initialUserData}
+                        setInitialUserData={setInitialUserData}
                     />
                 );
                 break
