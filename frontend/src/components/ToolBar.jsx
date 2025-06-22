@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import BreadcrumbDisplay from './BreadcrumbDisplay'; // 导入面包屑组件
+import BreadcrumbDisplay from './BreadcrumbDisplay';
 import './ToolBar.css';
 import { GetRetrieveDes } from '../../wailsjs/go/controller/DirController';
 import {toast} from "react-toastify";
@@ -12,6 +12,10 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
     const [editablePath, setEditablePath] = useState('');
     const pathInputRef = useRef(null);
     const [isLLMSearchMode, setIsLLMSearchMode] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const datePickerRef = useRef(null);
 
     useEffect(() => {
         if (!isEditingPath) {
@@ -27,6 +31,20 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         }
     }, [isEditingPath]);
 
+    // 点击外部关闭日期选择器
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setShowDatePicker(false);
+            }
+        }
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const switchToEditMode = () => {
         setEditablePath(currentPath || ''); // 从当前真实路径开始编辑
         setIsEditingPath(true);
@@ -41,7 +59,8 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         event.preventDefault();
         const query = editablePath.trim();
         setIsEditingPath(false);
-        if (query === "") {
+
+        if (query === "" && startDate === "" || endDate === "") {
             onPathSubmit(query);
             return;
         }
@@ -51,7 +70,7 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
             return;
         }
         // 2. 判断是否是绝对路径
-        const isWindowsAbsPath = /^[a-zA-Z]:[\/\\]/.test(query) || query.startsWith("\\\\");
+        const isWindowsAbsPath = /^[a-zA-Z]:[/\\]/.test(query) || query.startsWith("\\\\");
         const isUnixAbsPath = query.startsWith("/");
         
         if ((isWindows && isWindowsAbsPath) || (!isWindows && isUnixAbsPath)) {
@@ -76,9 +95,8 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                 return;
             }
         }
-
         // 4. 如果以上都不是，则视为在当前目录下进行搜索
-        onSearchFile(currentPath, query, isLLMSearchMode);
+        onSearchFile(currentPath, query, isLLMSearchMode, { startDate, endDate });
     };
 
     const toggleLLMSearchMode = () => {
@@ -131,6 +149,25 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         }
     }
 
+    const toggleDatePicker = () => {
+        setShowDatePicker(prev => !prev);
+    };
+
+    const handleStartDateChange = (event) => {
+        const date = event.target.value ? new Date(event.target.value) : null;
+        setStartDate(date);
+    };
+
+    const handleEndDateChange = (event) => {
+        const date = event.target.value ? new Date(event.target.value) : null;
+        setEndDate(date);
+    };
+
+    const clearDates = () => {
+        setStartDate(null);
+        setEndDate(null);
+    };
+
     return (
         <div className="explorer-toolbar"> {/* 或者你的 toolbar-container 类名 */}
             <div className="navigation-buttons">
@@ -159,6 +196,48 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                         onEditPath={switchToEditMode}
                     />
                 )}
+            </div>
+            {/* 日期选择按钮 */}
+            <div className="date-picker-container" ref={datePickerRef}>
+                <button
+                    onClick={toggleDatePicker}
+                    title={(startDate || endDate) ? t('Date filter active') : t('Add date filter')}
+                    className={`date-picker-btn ${(startDate || endDate) ? 'active' : ''}`}
+                >
+                    📅
+                </button>
+                <div className={`date-picker-dropdown ${showDatePicker ? 'open' : 'closed'}`}>
+                    <div className="date-picker-header">
+                        <span>{t('Select Date Range')}</span>
+                        {(startDate || endDate) && (
+                            <button onClick={clearDates} className="clear-date-btn" title={t('Clear')}>
+                                ❌
+                            </button>
+                        )}
+                    </div>
+                    <div className="date-inputs-container">
+                        <div className="date-input-group">
+                            <label>{t('From')}</label>
+                            <input
+                                type="date"
+                                onChange={handleStartDateChange}
+                                value={startDate ? startDate.toISOString().split('T')[0] : ''}
+                                className="date-input"
+                                max={endDate ? endDate.toISOString().split('T')[0] : ''}
+                            />
+                        </div>
+                        <div className="date-input-group">
+                            <label>{t('To')}</label>
+                            <input
+                                type="date"
+                                onChange={handleEndDateChange}
+                                value={endDate ? endDate.toISOString().split('T')[0] : ''}
+                                className="date-input"
+                                min={startDate ? startDate.toISOString().split('T')[0] : ''}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
             {/* LLM 模式切换按钮 */}
             <button

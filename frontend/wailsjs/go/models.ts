@@ -1,5 +1,23 @@
 export namespace controller {
 	
+	export class SearchParams {
+	    query: string;
+	    current_path: string;
+	    modified_after: string;
+	    modified_before: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SearchParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.query = source["query"];
+	        this.current_path = source["current_path"];
+	        this.modified_after = source["modified_after"];
+	        this.modified_before = source["modified_before"];
+	    }
+	}
 	export class SearchResponse {
 	    items: service.FileSystemEntry[];
 	    duration_ns: number;

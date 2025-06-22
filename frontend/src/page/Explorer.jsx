@@ -1,12 +1,12 @@
-import React, {useState, useEffect, useCallback, useRef} from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {toast} from 'react-toastify';
 import './Explorer.css';
 import {GetDiskInfo, IndexDir, SearchItemFromInput, SearchItemFromLLM} from '../../wailsjs/go/controller/DirController';
 import ToolBar from "../components/ToolBar.jsx";
 import {formatBytes, formatDate, getParentPath} from "../assets/utils/utils.js"
 import RightClickModel from "../components/RightClickModel.jsx";
-import { FixedSizeList as List } from 'react-window';
+import {FixedSizeList as List} from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 const REFRESH_INTERVAL = 10000; // 每 10 秒刷新一次
@@ -23,6 +23,8 @@ function Explorer() {
     const [searchResults, setSearchResults] = useState([]);
     const [searchDuration, setSearchDuration] = useState(null);
     const [viewMode, setViewMode] = useState('drives');
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
     const [rightClickModelVisible, setRightClickModelVisible] = useState(false);
     const [rightClickModelPosition, setRightClickModelPosition] = useState({ x: 0, y: 0 });
     const [rightClickModelItem, setRightClickModelItem] = useState(null);
@@ -73,38 +75,210 @@ function Explorer() {
         loadData('');
     }, [loadData]);
 
-    const handleSearchFile = async (currentPath, query, isLLMSearchMode) => {
+    const handleSearchFile = async (currentPath, query, isLLMSearchMode, dateRange) => {
         setIsLoading(true);
         setViewMode('search_results');
         setSearchQuery(query);
         setSearchDuration(null);
+        
+        // 更新日期状态变量
+        setStartDate(dateRange?.startDate || null);
+        setEndDate(dateRange?.endDate || null);
+        
         try {
-            let response
-            if (!isLLMSearchMode) {
-                response = await SearchItemFromInput(query, currentPath);
-            }else {
-                response = await SearchItemFromLLM(query, currentPath)
+            let response;
+            // 构建传递给后端的 searchParams 对象
+            const searchParams = {
+                query: query,
+                current_path: currentPath,
+                modified_after: "",
+                modified_before: "",
+            };
+
+            // 处理日期范围参数并填充 backendSearchParams
+            if (dateRange) {
+                if (dateRange.startDate) {
+                    const localStartDate = new Date(dateRange.startDate);
+                    // 创建一个新的 Date 对象，其时间戳代表所选日期的 UTC 开始
+                    const utcStartDate = new Date(Date.UTC(
+                        localStartDate.getFullYear(),
+                        localStartDate.getMonth(),
+                        localStartDate.getDate(),
+                        0, 0, 0
+                    ));
+                    searchParams.modified_after = utcStartDate.toISOString();
+                }
+                if (dateRange.endDate) {
+                    const localEndDate = new Date(dateRange.endDate);
+                    // 创建一个新的 Date 对象，其时间戳代表所选日期的 UTC 结束
+                    const utcEndDate = new Date(Date.UTC(
+                        localEndDate.getFullYear(),
+                        localEndDate.getMonth(),
+                        localEndDate.getDate(),
+                        23, 59, 59
+                    ));
+                    searchParams.modified_before = utcEndDate.toISOString();
+                }
             }
 
-            console.log("Frontend: Raw response from SearchItemFromInput:", response);
+            if (!isLLMSearchMode) {
+                response = await SearchItemFromInput(searchParams);
+            } else {
+                response = await SearchItemFromLLM(searchParams);
+            }
+
             setSearchResults(response.items || []);
-            setSearchDuration(response.duration_ns); // 假设 duration 是纳秒，转换为毫秒或秒显示
+            setSearchDuration(response.duration_ns);
         } catch (error) {
             toast.error(t("{{message}}", { message: String(error) }));
             setSearchResults([]);
             setSearchDuration(null);
-            loadData(currentPath)
+            loadData(currentPath);
         } finally {
             setIsLoading(false);
         }
     }
 
+    // TODO: 流式传输
+    const handleSearchFileStream = useCallback(async (currentPath, query, isLLMSearchMode, dateRange) => {
+        setIsLoading(true);
+        setViewMode('search_results');
+        setSearchQuery(query);
+        setSearchDuration(null);
+
+        // 更新日期状态变量
+        setStartDate(dateRange?.startDate || null);
+        setEndDate(dateRange?.endDate || null);
+
+        let stopStreaming = null
+        try {
+            // 构建传递给后端的 searchParams 对象
+            const searchParams = {
+                query: query,
+                current_path: currentPath,
+                modified_after: "",
+                modified_before: "",
+            };
+
+            // 处理日期范围参数并填充 backendSearchParams
+            if (dateRange) {
+                if (dateRange.startDate) {
+                    const localStartDate = new Date(dateRange.startDate);
+                    // 创建一个新的 Date 对象，其时间戳代表所选日期的 UTC 开始
+                    const utcStartDate = new Date(Date.UTC(
+                        localStartDate.getFullYear(),
+                        localStartDate.getMonth(),
+                        localStartDate.getDate(),
+                        0, 0, 0
+                    ));
+                    searchParams.modified_after = utcStartDate.toISOString();
+                }
+                if (dateRange.endDate) {
+                    const localEndDate = new Date(dateRange.endDate);
+                    // 创建一个新的 Date 对象，其时间戳代表所选日期的 UTC 结束
+                    const utcEndDate = new Date(Date.UTC(
+                        localEndDate.getFullYear(),
+                        localEndDate.getMonth(),
+                        localEndDate.getDate(),
+                        23, 59, 59
+                    ));
+                    searchParams.modified_before = utcEndDate.toISOString();
+                }
+            }
+
+            // if (!isLLMSearchMode) {
+            //     response = await SearchItemFromInput(searchParams);
+            // } else {
+            //     response = await SearchItemFromLLM(searchParams);
+            // }
+            let stream;
+            if (!isLLMSearchMode) {
+                stream = await SearchItemFromInputInStream(searchParams);
+            } else{
+                // TODO: 实现大模型检索的流式传输
+                toast("Is not implement yet.")
+            }
+
+            if (!stream || typeof stream.onData !== 'function') {
+                toast.error(t("Failed to initiate search stream."));
+                setIsLoading(false);
+                return;
+            }
+
+            let stopStreaming = stream.stop; // 保存停止函数
+
+            stream.onData((item) => {
+                if (item === null) { // Go 后端关闭 channel 时，Wails 可能发送 null
+                    console.log("Search stream finished.");
+                    setIsLoading(false);
+                    if (stopStreaming) stopStreaming(); // 确保停止
+                    return;
+                }
+                console.log("Received stream item:", item);
+                // 转换后端 item 结构为前端需要的格式 (如果不同)
+                const feItem = {
+                    name: item.name,
+                    path: item.path,
+                    is_dir: item.is_dir,
+                    size: item.size,
+                    mod_time: item.mod_time,
+                    file_type: item.file_type,
+                };
+                setSearchResults(prevResults => [...prevResults, feItem]);
+            });
+
+            stream.onError((err) => {
+                console.error("Error from search stream:", err);
+                toast.error(t("Error during search: {{message}}", { message: String(err) }));
+                setIsLoading(false);
+                if (stopStreaming) stopStreaming();
+            });
+
+            // Wails v2.7+ 通常会在 Go channel 关闭时自动清理。
+            // stream.onClose(() => {
+            //     console.log("Search stream closed by backend.");
+            //     setIsSearching(false);
+            // });
+        } catch (error) { // 这个 catch 捕获的是调用 SearchItemFromInputInStream 本身的错误
+            console.error("Error calling SearchItemFromInputInStream API:", error);
+            toast.error(t("Failed to start search: {{message}}", { message: error.message || String(error) }));
+            setIsLoading(false);
+        }
+
+        // 返回一个清理函数，以便在组件卸载或发起新搜索时停止旧的流
+        return () => {
+            if (stopStreaming) {
+                console.log("Stopping previous search stream...");
+                stopStreaming();
+            }
+        };
+    }, [t, i18n])
+
+    // 在 Explorer 组件卸载时，或者当发起新的搜索时，确保停止任何正在进行的流
+    // 可以使用一个 ref 来存储当前的 stopStreaming 函数
+    const stopCurrentStreamRef = useRef(null);
+
+    const triggerSearch = async (currentPath, query, isLLMSearchMode, dateRange) => {
+        // 如果已有流在进行，先停止它
+        if (stopCurrentStreamRef.current) {
+            stopCurrentStreamRef.current();
+        }
+        // 调用 handleSearchFileStream 并存储返回的停止函数
+        stopCurrentStreamRef.current = await handleSearchFileStream(currentPath, query, isLLMSearchMode, dateRange);
+    };
+
+    // 示例：当用户在 ToolBar 中提交搜索时
+    // 这个函数会作为 onSearchFile prop 传递给 ToolBar
+    const onSearchFromToolbar = (currentPath, query, isLLMSearchMode, dateRange) => {
+        triggerSearch(currentPath, query, isLLMSearchMode, dateRange);
+    };
+
     const handleDiskClick = (item) => {
-        if (item.device !== "") { // 驱动器
+        if (item.device !== "") {
             if (currentPath !== item.device) { // 防止重复加载同一路径
                 loadData(item.device); // 加载新路径
             }
-        } else { // 文件
+        } else {
             toast.info("Disk preview/action not yet implemented.");
         }
     }
@@ -352,7 +526,7 @@ function Explorer() {
                     subDirs={currentItems.sub_dirs}
                     onPathSubmit={loadData}
                     onGoBack={navigateBack}
-                    onSearchFile={handleSearchFile}
+                    onSearchFile={onSearchFromToolbar}
                     onRefresh={loadDataNoCache}
                 />
                 {viewMode === 'drives' && renderDrivesView()}
@@ -361,7 +535,22 @@ function Explorer() {
                     <>
                         <div className="search-results-header">
                             <h3>
-                                {t('Search Results for \"{{query}}\" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
+                                {t('Search Results for "{{query}}" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
+                                {/* 显示日期过滤信息 */}
+                                {(startDate || endDate) && (
+                                    <span className="date-filter-info">
+                                        {startDate && endDate ? (
+                                            t('(filtered by date: from {{startDate}} to {{endDate}})', {
+                                                startDate: startDate.toLocaleDateString(),
+                                                endDate: endDate.toLocaleDateString()
+                                            })
+                                        ) : startDate ? (
+                                            t('(filtered by date: after {{date}})', { date: startDate.toLocaleDateString() })
+                                        ) : (
+                                            t('(filtered by date: before {{date}})', { date: endDate.toLocaleDateString() })
+                                        )}
+                                    </span>
+                                )}
                             </h3>
                             {searchDuration !== null && (
                                 <span className="search-duration">

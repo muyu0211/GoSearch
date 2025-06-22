@@ -34,10 +34,10 @@ export function RenameItem(arg1, arg2) {
   return window['go']['controller']['DirController']['RenameItem'](arg1, arg2);
 }
 
-export function SearchItemFromInput(arg1, arg2) {
-  return window['go']['controller']['DirController']['SearchItemFromInput'](arg1, arg2);
+export function SearchItemFromInput(arg1) {
+  return window['go']['controller']['DirController']['SearchItemFromInput'](arg1);
 }
 
-export function SearchItemFromLLM(arg1, arg2) {
-  return window['go']['controller']['DirController']['SearchItemFromLLM'](arg1, arg2);
+export function SearchItemFromLLM(arg1) {
+  return window['go']['controller']['DirController']['SearchItemFromLLM'](arg1);
 }

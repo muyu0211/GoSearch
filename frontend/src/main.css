@@ -64,7 +64,7 @@ body.theme-light {
     --button-hover-bg-color: #0056b3;
     --input-bg-color: #fff;
     --input-border-color: #ccc;
-    --input-focus-border-color: #007bff;
+    --input-focus-border-color: #76aeee;
     --results-bg-color: #fff;
     --results-item-hover-bg-color: #f0f8ff;
     --results-item-selected-bg-color: #e0f0ff;
@@ -78,7 +78,7 @@ body.theme-light {
     --settings-text-secondary-color: #555555;
     --settings-header-color: #007bff;
     --settings-subheader-color: #2c3e50;
-    --settings-accent-color: #007bff;
+    --settings-accent-color: #64B5F6FF;
     --settings-border-color: #e0e0e0;
     --settings-section-bg-color: #f9f9f9;
     --settings-button-bg-color: #f0f0f0;
@@ -116,7 +116,7 @@ body.theme-dark {
     --input-bg-color: #333;
     --input-border-color: #555;
     --input-text-color: #e0e0e0; /* 输入框文字颜色 */
-    --input-focus-border-color: #007bff;
+    --input-focus-border-color: #76aeee;
     --results-bg-color: #2c2c2c;
     --results-item-hover-bg-color: #3a3a3a;
     --results-item-selected-bg-color: #4a4a4a;

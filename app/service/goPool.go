@@ -163,13 +163,13 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 		}
 
 		// 对日期进行匹配
-		if t.params.ModifiedBefore != nil {
-			if fileModTime < t.params.ModifiedBefore.Unix() {
+		if t.params.ModifiedAfter != nil {
+			if fileModTime < t.params.ModifiedAfter.Unix() {
 				continue
 			}
 		}
-		if t.params.ModifiedAfter != nil {
-			if fileModTime > t.params.ModifiedAfter.Unix() {
+		if t.params.ModifiedBefore != nil {
+			if fileModTime > t.params.ModifiedBefore.Unix() {
 				continue
 			}
 		}

@@ -208,7 +208,12 @@ func TestSearchFile(t *testing.T) {
 	)
 
 	dirController := controller.NewDirController()
-	response, err := dirController.SearchItemFromInput(targetInput, currDirPath)
+	response, err := dirController.SearchItemFromInput(&controller.SearchParams{
+		Query:       targetInput,
+		CurrentPath: currDirPath,
+		//ModifiedAfter:  "2025-06-21T00:00:00.000Z",
+		//ModifiedBefore: "2025-06-21T23:59:59.999Z",
+	})
 	if err != nil {
 		t.Log(err)
 		return
@@ -229,7 +234,10 @@ func TestLLM(t *testing.T) {
 		currDirPath = "E:\\Files"
 	)
 	dirController := controller.NewDirController()
-	if _, err := dirController.SearchItemFromLLM(query, currDirPath); err != nil {
+	if _, err := dirController.SearchItemFromLLM(&controller.SearchParams{
+		Query:       query,
+		CurrentPath: currDirPath,
+	}); err != nil {
 		t.Log(err)
 	}
 

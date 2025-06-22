@@ -11,7 +11,8 @@
 .goToHomeBtn,
 .retrieveDesBtn,
 .refreshBtn,
-.llm-toggle-btn{
+.llm-toggle-btn,
+.date-picker-btn {
     height: 100%;
     background: none;
     color: var(--header-text-color, var(--app-text-color));
@@ -19,7 +20,7 @@
     padding: 0.25rem 0.25rem;
     cursor: pointer;
     border: none;
-    margin: 0 0.5rem;
+    margin: 0 0.2rem;
     border-radius: 50%;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
@@ -27,7 +28,8 @@
 .goUpBtn:hover:not(:disabled),
 .goToHomeBtn:hover:not(:disabled),
 .retrieveDesBtn:hover:not(:disabled),
-.refreshBtn:hover:not(:disabled) {
+.refreshBtn:hover:not(:disabled),
+.date-picker-btn:hover:not(:disabled) {
     background-color: var(--bg-tertiary, #e0e0e0);
     /*border-color: var(--input-border-color);*/
 }
@@ -76,16 +78,111 @@
     line-height: normal;
 }
 
-{
-    padding: 0.5rem 0.25rem; /* 调整 padding 使其与其他按钮协调 */
-}
 
-.llm-toggle-btn.active {
+.llm-toggle-btn.active,
+.date-picker-btn.active {
     background-color: var(--settings-accent-color); /* 激活时的背景色 */
     color: var(--button-text-color, white); /* 激活时的文字/图标颜色 */
     /*box-shadow: inset 0 0 5px rgba(0,0,0,0.2);   !*可选的内阴影效果*!*/
 }
-.llm-toggle-btn.active:hover {
+.llm-toggle-btn.active:hover,
+.date-picker-btn.active:hover {
     background-color: var(--settings-accent-color); /* 激活时悬停颜色可以不变或略微变深 */
     opacity: 0.9;
+}
+
+/* 日期选择器相关样式 */
+/* 日期选择器相关样式 */
+.date-picker-container {
+    position: relative; /* 确保 dropdown 能相对于它定位 */
+}
+
+.date-picker-dropdown {
+    position: absolute;
+    right: 0; 
+    top: calc(120% + 8px); /* 在按钮下方，留一点间隙 */
+    background-color: var(--header-bg-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius-large);
+    box-shadow: 0 4px 10px var(--shadow-primary, rgba(0, 0, 0, 0.1));
+    padding: 0.7rem;
+    z-index: 1000; /* 确保在最上层 */
+    min-width: 280px; /* 调整最小宽度以容纳日期输入框 */
+
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s;
+}
+
+.date-picker-dropdown.open {
+    /* 打开状态 */
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+    pointer-events: auto; /* 打开时可交互 */
+    transition-delay: 0s; /* 打开时立即开始 visibility 过渡 */
+}
+
+
+.date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem; /* 增加与下方输入框的间距 */
+    padding-bottom: 0.5rem; /* 在标题下方加一点内边距 */
+    border-bottom: 1px solid var(--input-border-color); /* 标题和内容之间的分隔线 */
+    font-size: 0.9em;
+    color: var(--input-text-color, var(--app-text-color));
+}
+
+.clear-date-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em; /* 让 'X' 更大一点，更容易点击 */
+    /* padding: 0.2rem; */
+    line-height: 1;
+    color: var(--text-secondary, #888); /* 使用次要文本颜色 */
+}
+.clear-date-btn:hover {
+    color: var(--app-text-color); /* 悬停时更明显 */
+}
+
+.date-inputs-container {
+    display: flex;
+    flex-direction: column; /* 保持列布局 */
+    gap: 0.5rem; /* 增加组之间的间距 */
+}
+
+.date-input-group {
+    display: flex;         /* 1. 设置为 flex 容器 */
+    align-items: center;   /* 2. 垂直居中对齐内部元素 (label 和 input) */
+    margin-bottom: 0.25rem; /* (可选) 与其他 filter group 的间距 */
+    gap: 0.3rem;           /* 3. (可选) 在 label 和 input 之间添加一些间距 */
+}
+
+.date-input-group label {
+    /* white-space: nowrap; */ /* 如果标签文本可能很长，你可能不希望它换行 */
+    margin-right: 0.5rem; /* 如果不用 gap，可以用 margin 来控制间距 */
+    font-size: 0.9em;     /* (可选) 调整标签字体大小 */
+    color: var(--text-secondary, #555); /* (可选) 使用主题变量 */
+    flex-shrink: 0;       /* 防止标签在空间不足时被压缩 */
+}
+
+.date-input {
+    width: 100%; /* 让输入框填满其容器 */
+    box-sizing: border-box; /* 确保 padding 不会撑大 */
+    padding: 0.5rem; /* 增加内边距 */
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius-small);
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color, var(--app-text-color));
+    font-size: 1.1em;
+}
+.date-input:focus { /* 添加聚焦样式 */
+    outline: none;
+    border-color: var(--input-focus-border-color);
+    /* box-shadow: 0 0 0 1px var(--input-focus-border-color); */
 }

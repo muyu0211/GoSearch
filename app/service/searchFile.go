@@ -45,6 +45,17 @@ func SearchItems(searchParams *SearchParams) ([]*FileSystemEntry, error) {
 	return result, nil
 }
 
+func SearchItemsInStream(searchParams *SearchParams) (<-chan *FileSystemEntry, error) {
+	var (
+		searchPool *SearchPool
+	)
+
+	searchPool = NewSearchPool(32)
+	searchPool.Start(searchParams)
+
+	return searchPool.results, nil
+}
+
 // ParseParams 解析用户搜索参数
 func ParseParams(input, currDirPath string) (*SearchParams, error) {
 	if strings.HasSuffix(currDirPath, ":") {

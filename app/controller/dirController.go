@@ -20,6 +20,13 @@ type DirController struct {
 	totalFileIndexed int
 }
 
+type SearchParams struct {
+	Query          string `json:"query"`
+	CurrentPath    string `json:"current_path"` // 当前搜索的目录
+	ModifiedAfter  string `json:"modified_after"`
+	ModifiedBefore string `json:"modified_before"`
+}
+
 type SearchResponse struct {
 	Items      []*service.FileSystemEntry `json:"items"`
 	DurationNs time.Duration              `json:"duration_ns"` // 纳米
@@ -149,44 +156,94 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 }
 
 // SearchItemFromInput 处理用户搜索框输入
-func (d *DirController) SearchItemFromInput(query string, currDirPath string) (*SearchResponse, error) {
+func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*SearchResponse, error) {
 	var (
-		searchParams *service.SearchParams
-		items        []*service.FileSystemEntry
-		err          error
+		params *service.SearchParams
+		items  []*service.FileSystemEntry
+		err    error
 	)
-	if currDirPath == "" {
+	if searchParams.CurrentPath == "" {
 		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
 
 	start := time.Now()
-	if searchParams, err = service.ParseParams(query, currDirPath); err != nil {
+	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
 		return nil, err
 	}
-	log.Println("查询条件:", searchParams)
-	if items, err = service.SearchItems(searchParams); err != nil {
+
+	// 处理额外的搜索参数
+	if searchParams.ModifiedAfter != "" {
+		// 解析时间字符串
+		if modifiedAfter, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedAfter); err == nil {
+			params.ModifiedAfter = &modifiedAfter
+		}
+	}
+	if searchParams.ModifiedBefore != "" {
+		// 解析时间字符串
+		if modifiedBefore, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedBefore); err == nil {
+			params.ModifiedBefore = &modifiedBefore
+		}
+	}
+	//log.Println("开始时间:", params.ModifiedBefore.Unix())
+	//log.Println("结束时间:", params.ModifiedAfter.Unix())
+
+	if items, err = service.SearchItems(params); err != nil {
 		return nil, err
 	}
 
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 
-func (d *DirController) SearchItemFromLLM(query string, currDirPath string) (*SearchResponse, error) {
+func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) (<-chan *service.FileSystemEntry, error) {
 	var (
-		searchParams *service.SearchParams
-		items        []*service.FileSystemEntry
-		err          error
+		stream <-chan *service.FileSystemEntry
+		params *service.SearchParams
+		err    error
 	)
-	if currDirPath == "" {
+	if searchParams.CurrentPath == "" {
 		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
 
-	if searchParams, err = service.ParseParamsFromLLM(query); err != nil {
+	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
 		return nil, err
 	}
-	searchParams.BaseDir = currDirPath
+
+	// 处理额外的搜索参数
+	if searchParams.ModifiedAfter != "" {
+		// 解析时间字符串
+		if modifiedAfter, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedAfter); err == nil {
+			params.ModifiedAfter = &modifiedAfter
+		}
+	}
+	if searchParams.ModifiedBefore != "" {
+		// 解析时间字符串
+		if modifiedBefore, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedBefore); err == nil {
+			params.ModifiedBefore = &modifiedBefore
+		}
+	}
+
+	if stream, err = service.SearchItemsInStream(params); err != nil {
+		return nil, err
+	}
+	return stream, nil
+}
+
+func (d *DirController) SearchItemFromLLM(searchParams *SearchParams) (*SearchResponse, error) {
+	var (
+		params *service.SearchParams
+		items  []*service.FileSystemEntry
+		err    error
+	)
+	if searchParams.CurrentPath == "" {
+		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
+	}
+
+	if params, err = service.ParseParamsFromLLM(searchParams.Query); err != nil {
+		return nil, err
+	}
+	params.BaseDir = searchParams.CurrentPath
 	start := time.Now()
-	if items, err = service.SearchItems(searchParams); err != nil {
+	if items, err = service.SearchItems(params); err != nil {
 		return nil, err
 	}
 
@@ -202,6 +259,10 @@ func (d *DirController) GetRetrieveDes() (string, error) {
 			"1.文件名检索: 直接输入文件名前缀, 将从当前路径下检索所有符合要求的项目;\n" +
 			"2.文件类型检索: type: [文件扩展名], 例如: type: txt, 将从当前路径下检索所有.txt文件，也可同时输入多个文件扩展名, type: txt doc;\n" +
 			"3.文件大小检索: size: [文件大小], 例如: size: >10B <= 20MB, 将从当前路径下检索所有大小大于10B, 小于20MB的文件;\n" +
+			"4.文件日期检索: 点击工具栏中的日期图标(📅)选择日期范围:\n" +
+			"   - 只选择开始日期: 查找在该日期及之后修改的文件\n" +
+			"   - 只选择结束日期: 查找在该日期及之前修改的文件\n" +
+			"   - 同时选择开始和结束日期: 查找在这两个日期之间修改的文件\n" +
 			"多个检索关键字可同时使用: type: txt size: >10B <5MB.\n",
 	})
 }

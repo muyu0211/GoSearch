@@ -15,7 +15,7 @@
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
     animation: fadeInMonitor 0.3s forwards ease-out;
-     transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* 也可以用一个类来控制显示/隐藏的动画 */
