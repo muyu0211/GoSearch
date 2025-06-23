@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@wailsapp/runtime": "^1.1.1",
+    "@wailsio/runtime": "^3.0.0-alpha.66",
     "i18next": "^25.2.0",
     "i18next-browser-languagedetector": "^8.1.0",
     "react-device-detect": "^2.2.3",

@@ -2,10 +2,8 @@
 import React from 'react';
 import {isWindows} from 'react-device-detect';
 import { useTranslation } from 'react-i18next';
-import './BreadcrumbDisplay.css'; // 为面包屑创建 CSS 文件
+import './BreadcrumbDisplay.css';
 
-// onNavigateToPath: (path) => void，用于点击面包屑项时导航
-// onEditPath: () => void，用于点击面包屑容器时触发编辑模式
 function BreadcrumbDisplay({ currentPath, onNavigateToPath, onEditPath }) {
     const { t } = useTranslation();
     const parts = currentPath.split(/[\/\\]/).filter(part => part !== '');
@@ -31,9 +29,9 @@ function BreadcrumbDisplay({ currentPath, onNavigateToPath, onEditPath }) {
         if (isWindows) {
             pathToNavigate = parts.slice(0, index + 1).join(segment);
             // 确保盘符后有斜杠，例如 C:\ 而不是 C:
-            if (index === 0 && !pathToNavigate.endsWith(segment)) {
-                pathToNavigate += segment;
-            }
+            // if (index === 0 && !pathToNavigate.endsWith(segment)) {
+            //     pathToNavigate += segment;
+            // }
         } else {
             // 对于类 Unix 路径，确保以 / 开头
             pathToNavigate = segment + parts.slice(0, index + 1).join(segment);

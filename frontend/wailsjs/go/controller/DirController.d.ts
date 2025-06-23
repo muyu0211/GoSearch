@@ -21,4 +21,8 @@ export function RenameItem(arg1:string,arg2:string):Promise<void>;
 
 export function SearchItemFromInput(arg1:controller.SearchParams):Promise<controller.SearchResponse>;
 
+export function SearchItemFromInputInStream(arg1:controller.SearchParams):Promise<void>;
+
 export function SearchItemFromLLM(arg1:controller.SearchParams):Promise<controller.SearchResponse>;
+
+export function SearchItemFromLLMInStream(arg1:controller.SearchParams):Promise<void>;

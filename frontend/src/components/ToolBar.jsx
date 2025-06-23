@@ -2,28 +2,37 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import BreadcrumbDisplay from './BreadcrumbDisplay';
 import './ToolBar.css';
-import { GetRetrieveDes } from '../../wailsjs/go/controller/DirController';
-import {toast} from "react-toastify";
-import {isWindows} from "react-device-detect";
+import { GetRetrieveDes } from '../../wailsjs/go/controller/DirController'; // 假设这是同步的
+import { toast } from "react-toastify";
+import { isWindows } from "react-device-detect"; // 确保这个库按预期工作或有替代方案
 
-function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
+// 辅助函数判断是否为绝对路径
+const isAbsolutePath = (path) => {
+    if (typeof path !== 'string') return false;
+    const isWinAbs = /^[a-zA-Z]:[/\\]/.test(path) || path.startsWith("\\\\");
+    const isUnixAbs = path.startsWith("/");
+    return (isWindows && isWinAbs) || (!isWindows && isUnixAbs); // isWindows 来自 react-device-detect
+};
+
+function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, onGoBack, onSearchFile, onRefresh }) {
     const { t } = useTranslation();
     const [isEditingPath, setIsEditingPath] = useState(false);
     const [editablePath, setEditablePath] = useState('');
     const pathInputRef = useRef(null);
-    const [isLLMSearchMode, setIsLLMSearchMode] = useState(false);
+    const [isLLMSearch, setIsLLMSearch] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const datePickerRef = useRef(null);
+    const datePickerRef = useRef(null); // 用于日期选择器的外部点击关闭
 
+    // 同步 editablePath 当 currentPath 改变或退出编辑模式时
     useEffect(() => {
         if (!isEditingPath) {
-            setEditablePath(currentPath || ''); // 当退出编辑或 currentPath 更新时，同步 editablePath
+            setEditablePath(currentPath || '');
         }
     }, [currentPath, isEditingPath]);
 
-    // 判断是否正在编辑
+    // 聚焦并全选输入框当进入编辑模式
     useEffect(() => {
         if (isEditingPath && pathInputRef.current) {
             pathInputRef.current.focus();
@@ -34,19 +43,21 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
     // 点击外部关闭日期选择器
     useEffect(() => {
         function handleClickOutside(event) {
-            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target) &&
+                !event.target.closest('.date-picker-btn')) { // 确保点击的不是打开按钮本身
                 setShowDatePicker(false);
             }
         }
-        
-        document.addEventListener('mousedown', handleClickOutside);
+        if (showDatePicker) { // 只在日期选择器打开时监听
+            document.addEventListener('mousedown', handleClickOutside);
+        }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [showDatePicker]); // 依赖 showDatePicker
 
     const switchToEditMode = () => {
-        setEditablePath(currentPath || ''); // 从当前真实路径开始编辑
+        setEditablePath(currentPath || '');
         setIsEditingPath(true);
     };
 
@@ -54,57 +65,54 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         setEditablePath(event.target.value);
     };
 
-    // 提交路径栏
+    const handleSubmitLogic = async (query) => {
+        // 1. 空查询导航到根
+        if (query === "") {
+            await onPathSubmit("");
+            return;
+        }
+
+        // 2. 是否为绝对路径导航
+        if (isAbsolutePath(query)) {
+            await onPathSubmit(query);
+            return;
+        }
+
+        // 3. 是否为历史记录中的完整路径 (精确匹配)
+        if (historyPath.some(path => path === query)) {
+            await onPathSubmit(query);
+            return;
+        }
+
+        // 4. 是否为当前子目录的精确名称 (导航)
+        if (subDirs.length > 0) {
+            const lowerQuery = query.toLowerCase();
+            const matchedChildDir = subDirs.find(dir => dir.is_dir && dir.name.toLowerCase() === lowerQuery);
+            if (matchedChildDir) {
+                // 确保 matchedChildDir.path 是绝对路径
+                // 如果不是，需要构建: const fullPath = currentPath + (isWindows ? '\\' : '/') + matchedChildDir.name;
+                await onPathSubmit(matchedChildDir.path); // 假设 matchedChildDir.path 是绝对路径
+                // clearDatesAndSearch(); // 同上
+                return;
+            }
+        }
+        // 5. 否则，视为在当前目录下进行搜索
+        await onSearchFile(query, isLLMSearch, { startDate, endDate });
+    };
+
     const handleEditablePathSubmit = async (event) => {
         event.preventDefault();
         const query = editablePath.trim();
         setIsEditingPath(false);
-
-        if (query === "" && startDate === "" || endDate === "") {
-            onPathSubmit(query);
-            return;
-        }
-        // 1. 检查是否是历史路径中的完整路径
-        if (historyPath && historyPath.some(path => path === query)) {
-            onPathSubmit(query)
-            return;
-        }
-        // 2. 判断是否是绝对路径
-        const isWindowsAbsPath = /^[a-zA-Z]:[/\\]/.test(query) || query.startsWith("\\\\");
-        const isUnixAbsPath = query.startsWith("/");
-        
-        if ((isWindows && isWindowsAbsPath) || (!isWindows && isUnixAbsPath)) {
-            // TODO: 用户输入绝对路径时可能是索引文件也可能是索引文件夹
-            onPathSubmit(query);
-            return;
-        }
-
-        // 3. 判断输入的是否是当前路径下的条目（即相对路径）
-        if (subDirs && subDirs.length > 0) {
-            const lowerUserInput = query.toLowerCase();
-            const matchedChildDir = subDirs.find(
-                dir => dir.is_dir && dir.name.toLowerCase() === lowerUserInput
-            );
-
-            if (matchedChildDir) {
-                console.log("Submit: Navigating to child directory (relative):", matchedChildDir.path);
-                // matchedChildDir.path 应该是该子文件夹的完整绝对路径
-                // 如果 subDirs 中的 path 不是绝对路径，你需要在这里构建它
-                // 例如: const fullPathToChild = buildFullPath(currentPath, matchedChildDir.name);
-                onPathSubmit(matchedChildDir.path);
-                return;
-            }
-        }
-        // 4. 如果以上都不是，则视为在当前目录下进行搜索
-        onSearchFile(currentPath, query, isLLMSearchMode, { startDate, endDate });
+        await handleSubmitLogic(query);
     };
 
     const toggleLLMSearchMode = () => {
-        setIsLLMSearchMode(prev => !prev);
-        if (pathInputRef.current && !isEditingPath) { // 如果不在编辑模式，切换后可以自动进入编辑并聚焦
+        setIsLLMSearch(prev => !prev);
+        if (pathInputRef.current && !isEditingPath) {       // 如果不在编辑模式，切换后可以自动进入编辑并聚焦
             switchToEditMode();
         } else if (pathInputRef.current && isEditingPath) {
-            pathInputRef.current.focus(); // 如果已在编辑模式，确保焦点仍在输入框
+            pathInputRef.current.focus();                   // 如果已在编辑模式，确保焦点仍在输入框
         }
     };
 
@@ -113,14 +121,17 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         setIsEditingPath(false);
     };
 
-    // 监听键盘事件
     const handleEditablePathKeyDown = (event) => {
         if (event.key === 'Escape') {
+            event.preventDefault();
             setIsEditingPath(false);
             setEditablePath(currentPath || '');
         }
+        // Tab 补全逻辑 (TODO)
         if (event.key === 'Tab') {
-            // TODO: 按下tab补全
+            event.preventDefault(); // 阻止默认 Tab 行为
+            // TODO: 实现 Tab 补全逻辑，使用 subDirs (只包含文件夹)
+            console.log("Tab pressed, current input:", editablePath, "Sub-folders:", subDirs.filter(i => i.is_dir));
         }
     };
 
@@ -133,21 +144,23 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                 historyPath.splice(index);
             }
         } catch (error) {
-            // 如果 onPathSubmit 抛出错误，也应该处理一下编辑状态
-            console.error("Error during path submission from breadcrumb:", error);
-            // 根据你的错误处理策略，可能仍然需要退出编辑模式，或者保持编辑状态让用户修正
+            // 如果 onPathSubmit 抛出错误，处理一下编辑状态
         } finally {
             setIsEditingPath(false);
         }
     };
 
-    const handleCheckRetrieveDes = (event) => {
+    // 查看检索说明
+    const handleCheckRetrieveDes = async () => { // 假设 GetRetrieveDes 是异步的
         try {
-            const message = GetRetrieveDes()
-        }catch (error) {
-            toast.error(error)
+            const message = await GetRetrieveDes(); // 调用并等待
+            if (message) { // 检查是否有返回消息
+                toast.info(message);
+            }
+        } catch (error) {
+            toast.error(String(error)); // 将错误对象转为字符串
         }
-    }
+    };
 
     const toggleDatePicker = () => {
         setShowDatePicker(prev => !prev);
@@ -163,16 +176,26 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
         setEndDate(date);
     };
 
-    const clearDates = () => {
+    const clearDatesAndSearch = () => {
         setStartDate(null);
         setEndDate(null);
+        if (editablePath.trim() && !isAbsolutePath(editablePath.trim())) { // 如果输入框有搜索词
+            onSearchFile(editablePath.trim(), isLLMSearch, { startDate: null, endDate: null });
+        } else {
+            // 如果输入框是路径或空的，刷新当前路径（不带日期过滤）
+            onPathSubmit(currentPath);
+        }
+        setShowDatePicker(false);
     };
 
     return (
         <div className="explorer-toolbar"> {/* 或者你的 toolbar-container 类名 */}
             <div className="navigation-buttons">
-                <button onClick={onGoBack} disabled={currentPath === ""} title={t('Go Up')} className={"goUpBtn"}>⬆️</button>
-                <button onClick={() => onPathSubmit("")} title={t('Go to My Device')} className={"goToHomeBtn"}>🏠</button> {/* Home 按钮也调用 onPathSubmit */}
+                <button onClick={onGoBack} disabled={currentPath === "" && historyPath.length === 0} title={t('Go Up')}
+                        className={"goUpBtn"}>⬆️
+                </button>
+                <button onClick={() => onPathSubmit("")} title={t('Go to My Device')} className={"goToHomeBtn"}>🏠
+                </button>
             </div>
 
             <div className="path-input-container"> {/* 这个容器保持不变，用于边框和聚焦效果 */}
@@ -186,7 +209,9 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                             onBlur={handleEditablePathBlur}
                             onKeyDown={handleEditablePathKeyDown}
                             className="path-input-field"
+                            placeholder={currentPath || t('Type path or search term...')}
                             aria-label={t("Current path, editable")}
+                            autoComplete="off"
                         />
                     </form>
                 ) : (
@@ -197,58 +222,68 @@ function ToolBar({ currentPath, historyPath, subDirs=[], onPathSubmit, onGoBack,
                     />
                 )}
             </div>
-            {/* 日期选择按钮 */}
-            <div className="date-picker-container" ref={datePickerRef}>
-                <button
-                    onClick={toggleDatePicker}
-                    title={(startDate || endDate) ? t('Date filter active') : t('Add date filter')}
-                    className={`date-picker-btn ${(startDate || endDate) ? 'active' : ''}`}
-                >
-                    📅
-                </button>
-                <div className={`date-picker-dropdown ${showDatePicker ? 'open' : 'closed'}`}>
-                    <div className="date-picker-header">
-                        <span>{t('Select Date Range')}</span>
-                        {(startDate || endDate) && (
-                            <button onClick={clearDates} className="clear-date-btn" title={t('Clear')}>
-                                ❌
-                            </button>
-                        )}
-                    </div>
-                    <div className="date-inputs-container">
-                        <div className="date-input-group">
-                            <label>{t('From')}</label>
-                            <input
-                                type="date"
-                                onChange={handleStartDateChange}
-                                value={startDate ? startDate.toISOString().split('T')[0] : ''}
-                                className="date-input"
-                                max={endDate ? endDate.toISOString().split('T')[0] : ''}
-                            />
+            {/*<div className="toolbar-actions"> /!* 将右侧按钮包裹起来 *!/*/}
+                <div className="date-picker-container" ref={datePickerRef}>
+                    <button
+                        onClick={toggleDatePicker}
+                        title={(startDate || endDate) ? t('(filtered by date: from {{start}} to {{end}})', {
+                            start: startDate ? startDate.toLocaleDateString() : 'any',
+                            end: endDate ? endDate.toLocaleDateString() : 'any'
+                        }) : t('Add date filter')}
+                        className={`date-picker-btn ${(startDate || endDate) ? 'active' : ''}`}
+                    >
+                        📅
+                    </button>
+                    {showDatePicker && ( // 条件渲染日期选择器
+                        <div className={`date-picker-dropdown open`}> {/* 移除动态类，直接用 showDatePicker 控制 */}
+                            <div className="date-picker-header">
+                                <span>{t('Select Date Range')}</span>
+                                {(startDate || endDate) && (
+                                    <button onClick={clearDatesAndSearch} className="clear-date-btn" title={t('Clear Dates')}>
+                                        ❌
+                                    </button>
+                                )}
+                            </div>
+                            <div className="date-inputs-container">
+                                <div className="date-input-group">
+                                    <label htmlFor="startDateInput">{t('From')}</label>
+                                    <input
+                                        id="startDateInput"
+                                        type="date"
+                                        onChange={handleStartDateChange}
+                                        value={startDate ? startDate.toISOString().split('T')[0] : ''}
+                                        className="date-input"
+                                        max={endDate ? endDate.toISOString().split('T')[0] : ''}
+                                    />
+                                </div>
+                                <div className="date-input-group">
+                                    <label htmlFor="endDateInput">{t('To')}</label>
+                                    <input
+                                        id="endDateInput"
+                                        type="date"
+                                        onChange={handleEndDateChange}
+                                        value={endDate ? endDate.toISOString().split('T')[0] : ''}
+                                        className="date-input"
+                                        min={startDate ? startDate.toISOString().split('T')[0] : ''}
+                                    />
+                                </div>
+                            </div>
+                            {/*<button onClick={() => { handleSubmitLogic(editablePath.trim()); setShowDatePicker(false); }} className="apply-date-filter-btn">*/}
+                            {/*    {t('Apply & Search')}*/}
+                            {/*</button>*/}
                         </div>
-                        <div className="date-input-group">
-                            <label>{t('To')}</label>
-                            <input
-                                type="date"
-                                onChange={handleEndDateChange}
-                                value={endDate ? endDate.toISOString().split('T')[0] : ''}
-                                className="date-input"
-                                min={startDate ? startDate.toISOString().split('T')[0] : ''}
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
-            </div>
-            {/* LLM 模式切换按钮 */}
-            <button
-                onClick={toggleLLMSearchMode}
-                title={isLLMSearchMode ? t('Switch to Standard Search') : t('Switch to LLM Search')}
-                className={`llm-toggle-btn header-action-btn ${isLLMSearchMode ? 'active' : ''}`}
-            >
-                🧠
-            </button>
-            <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn">📑</button>
-            <button onClick={() => onRefresh(currentPath)} title={t('Refresh')} className="refreshBtn">🔄</button>
+                <button
+                    onClick={toggleLLMSearchMode}
+                    title={isLLMSearch ? t('Switch to Standard Search') : t('Switch to LLM Search')}
+                    className={`llm-toggle-btn header-action-btn ${isLLMSearch ? 'active' : ''}`}
+                >
+                    🧠
+                </button>
+                <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn header-action-btn">📑</button>
+                <button onClick={() => onRefresh(currentPath)} title={t('Refresh')} className="refreshBtn header-action-btn">🔄</button>
+            {/*</div>*/}
         </div>
     );
 }

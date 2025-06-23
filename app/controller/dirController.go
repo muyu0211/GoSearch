@@ -194,18 +194,18 @@ func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*Search
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 
-func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) (<-chan *service.FileSystemEntry, error) {
+func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) error {
 	var (
 		stream <-chan *service.FileSystemEntry
 		params *service.SearchParams
 		err    error
 	)
 	if searchParams.CurrentPath == "" {
-		return nil, fmt.Errorf("search base directory cannot be empty for this implementation")
+		return fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
 
 	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
-		return nil, err
+		return err
 	}
 
 	// 处理额外的搜索参数
@@ -223,9 +223,19 @@ func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) 
 	}
 
 	if stream, err = service.SearchItemsInStream(params); err != nil {
-		return nil, err
+		return err
 	}
-	return stream, nil
+
+	func() {
+		cnt := 0
+		for item := range stream {
+			cnt += 1
+			runtime.EventsEmit(d.ctx, "search_stream", item)
+		}
+		// 标记结束
+		runtime.EventsEmit(d.ctx, "search_stream", nil)
+	}()
+	return nil
 }
 
 func (d *DirController) SearchItemFromLLM(searchParams *SearchParams) (*SearchResponse, error) {
@@ -248,6 +258,34 @@ func (d *DirController) SearchItemFromLLM(searchParams *SearchParams) (*SearchRe
 	}
 
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
+}
+
+func (d *DirController) SearchItemFromLLMInStream(searchParams *SearchParams) error {
+	var (
+		stream <-chan *service.FileSystemEntry
+		params *service.SearchParams
+		err    error
+	)
+	if searchParams.CurrentPath == "" {
+		return fmt.Errorf("search base directory cannot be empty for this implementation")
+	}
+	if params, err = service.ParseParamsFromLLM(searchParams.Query); err != nil {
+		return err
+	}
+	params.BaseDir = searchParams.CurrentPath
+
+	if stream, err = service.SearchItemsInStream(params); err != nil {
+		return err
+	}
+
+	func() {
+		for item := range stream {
+			runtime.EventsEmit(d.ctx, "search_stream", item)
+		}
+		// 标记结束
+		runtime.EventsEmit(d.ctx, "search_stream", nil)
+	}()
+	return nil
 }
 
 // GetRetrieveDes 文件检索说明

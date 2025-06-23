@@ -34,3 +34,7 @@ export function getParentPath(filePath) {
         return lastIndex !== -1 ? filePath.substring(0, lastIndex) : '';
     }
 }
+
+export function splitSegment(filePath) {
+
+}

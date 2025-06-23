@@ -38,6 +38,14 @@ export function SearchItemFromInput(arg1) {
   return window['go']['controller']['DirController']['SearchItemFromInput'](arg1);
 }
 
+export function SearchItemFromInputInStream(arg1) {
+  return window['go']['controller']['DirController']['SearchItemFromInputInStream'](arg1);
+}
+
 export function SearchItemFromLLM(arg1) {
   return window['go']['controller']['DirController']['SearchItemFromLLM'](arg1);
+}
+
+export function SearchItemFromLLMInStream(arg1) {
+  return window['go']['controller']['DirController']['SearchItemFromLLMInStream'](arg1);
 }

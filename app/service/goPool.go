@@ -191,10 +191,6 @@ func (p *SearchPool) Results() ([]*FileSystemEntry, error) {
 	for entry := range p.results {
 		res = append(res, entry)
 	}
-	// 处理搜索结果
-	//for result := range p.results {
-	//	log.Printf("找到: %s (大小: %d bytes, 类型: %s)\n", result.Path, result.Size, result.IsDir)
-	//}
 	return res, nil
 }
 

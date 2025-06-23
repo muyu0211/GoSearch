@@ -280,3 +280,16 @@ func TestUserData(t *testing.T) {
 	//}
 	//t.Log(data)
 }
+
+func TestSearchStream(t *testing.T) {
+	var (
+		query       = "type:doc, docx"
+		currDirPath = "E:\\Files"
+	)
+	d := controller.NewDirController()
+	//d.setCtx(context.Background())
+	d.SearchItemFromInputInStream(&controller.SearchParams{
+		Query:       query,
+		CurrentPath: currDirPath,
+	})
+}

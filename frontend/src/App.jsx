@@ -127,7 +127,7 @@ function AppContent() {
                 {mainContent}
             </main>
             <ToastContainer
-                position="top-right"
+                position="top-center"
                 autoClose={1500} // 稍微加长一点时间
                 hideProgressBar={false}
                 newestOnTop={true}
@@ -136,7 +136,7 @@ function AppContent() {
                 pauseOnFocusLoss
                 draggable
                 theme={theme}
-                style={{ marginTop: '60px' }} // 调整以避开头部
+                style={{ marginTop: '-10px' }} // 调整以避开头部
             />
         </div>
     );

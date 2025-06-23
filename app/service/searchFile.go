@@ -36,7 +36,7 @@ func SearchItems(searchParams *SearchParams) ([]*FileSystemEntry, error) {
 	)
 
 	searchPool = NewSearchPool(32)
-	searchPool.Start(searchParams) // 启动搜索
+	searchPool.Start(searchParams)
 
 	if result, err = searchPool.Results(); err != nil {
 		return nil, err
@@ -52,7 +52,6 @@ func SearchItemsInStream(searchParams *SearchParams) (<-chan *FileSystemEntry, e
 
 	searchPool = NewSearchPool(32)
 	searchPool.Start(searchParams)
-
 	return searchPool.results, nil
 }
 
