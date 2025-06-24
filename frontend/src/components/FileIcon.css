@@ -1,0 +1,58 @@
+/* frontend/src/components/FileIcon.css (或 App.css) */
+.file-icon-svg {
+    font-size: 1.1em; /* 控制图标的默认大小 */
+    margin-right: 0.5rem; /* 图标和文字之间的间距，现在由 item-icon 控制 */
+    vertical-align: middle; /* 尝试垂直对齐 */
+    /*color: var(--icon-primary-color, var(--text-secondary)); !* 默认图标颜色，使用主题变量 *!*/
+    flex-shrink: 0;
+}
+
+.text-icon {
+
+}
+
+.folder-icon {
+    color: var(--icon-folder-color, #FFCA28); /* 例如，文件夹用黄色 (亮色主题) */
+}
+
+.image-icon {
+    color: var(--icon-image-color, #4CAF50); /* 图片用绿色 */
+
+}
+
+.pdf-icon {
+    color: var(--icon-pdf-color, #D32F2F); /* PDF 用红色 */
+}
+
+.word-icon {
+    color: var(--icon-document-color, #90CAF9FF);
+}
+
+.excel-icon {
+    color: var(--icon-sheet-color, #66BB6AFF);
+}
+
+.ppt-icon {
+    color: var(--icon-slide-color, #FFB74DFF)
+}
+
+.audio-icon {
+    color: var(--icon-audio-color, #BA68C8FF)
+}
+
+.video-icon{
+    color: var(--icon-video-color, #E57373FF)
+}
+
+.archive-icon {
+    color: var(--icon-archive-color, #A1887FFF);
+}
+
+.code-icon{
+    color: var(--icon-code-color, #4DD0E1FF)
+}
+
+.unknown-icon,
+.default-file-icon {
+    color: var(--icon-unknown-file-color);
+}

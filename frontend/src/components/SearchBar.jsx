@@ -41,47 +41,6 @@ function SearchBar({ currentTheme, onChangeTheme }) {
                     GoSearch
                   </span>
             </div>
-            {/*/!*显示搜索栏*!/*/}
-            {/*{currentPage === 'home' && (*/}
-            {/*    <div className="search-area">*/}
-            {/*         <form onSubmit={handleSubmit} className="search-bar-container">*/}
-            {/*             <div className="search-input-wrapper">*/}
-            {/*                 <input*/}
-            {/*                    ref={inputRef}*/}
-            {/*                    type="text"*/}
-            {/*                    value={inputValue}*/}
-            {/*                    onChange={(e) => setInputValue(e.target.value)}*/}
-            {/*                    placeholder="Search files (e.g., 'report.docx' or 'images from last week > 1MB')"*/}
-            {/*                    className="search-input-field"*/}
-            {/*                    disabled={isLoading}*/}
-            {/*                    aria-label="Search files"*/}
-            {/*                />*/}
-            {/*                {inputValue && !isLoading && (*/}
-            {/*                    <button*/}
-            {/*                        type="button"*/}
-            {/*                        onClick={handleClearInput}*/}
-            {/*                        className="clear-input-btn"*/}
-            {/*                        aria-label="Clear search input"*/}
-            {/*                    >*/}
-            {/*                        ×*/}
-            {/*                    </button>*/}
-            {/*                )}*/}
-            {/*            </div>*/}
-            {/*            <button*/}
-            {/*                type="submit"*/}
-            {/*                className="search-submit-btn"*/}
-            {/*                disabled={isLoading}*/}
-            {/*                aria-label="Submit search"*/}
-            {/*            >*/}
-            {/*                {isLoading ? (*/}
-            {/*                    <span className="spinner" aria-hidden="true"></span>*/}
-            {/*                ) : (*/}
-            {/*                    'Search'*/}
-            {/*                )}*/}
-            {/*            </button>*/}
-            {/*        </form>*/}
-            {/*    </div>*/}
-            {/*)}*/}
             <div className="settings-action-area">
                 {/* 系统监控触发按钮 */}
                 <button

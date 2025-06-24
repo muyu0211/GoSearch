@@ -20,14 +20,6 @@
     text-align: center;
 }
 
-/*.disk-explorer-loading,*/
-/*.disk-explorer-empty {*/
-/*    text-align: center;*/
-/*    padding: 2rem;*/
-/*    color: var(--text-secondary);*/
-/*    font-style: italic;*/
-/*}*/
-
 .disk-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 响应式列布局 */
@@ -182,32 +174,42 @@
 .header-name { text-align: left; }
 .header-size { justify-content: left; }
 .header-modified { justify-content: center; }
-/*.header-type { text-align: left; }*/
 
 .explorer-item-list-wrapper {
-    flex-grow: 1; /* 让 AutoSizer 的父容器占据所有可用垂直空间 */
+    flex-grow: 1;
     width: 100%;
-    overflow: hidden; /* AutoSizer 会处理内部滚动 */
+    overflow: hidden;
+}
+
+.list-row-container{
+    margin: 1px 0;
 }
 
 .explorer-item-list {
-    /* react-window 会处理滚动条，但你可以设置一些基础样式 */
-    overflow-y: scroll !important; /* 确保滚动条总是由 react-window 控制 */
+    overflow-y: scroll !important;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
 }
 
 .explorer-item {
-    display: grid; /* 使用 Grid 布局来对齐列 */
-    /* 必须与 .explorer-table-header 的 grid-template-columns 完全一致 */
+    display: grid;
     grid-template-columns: 40px minmax(150px, 2.5fr) minmax(80px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1.5fr);
+    height: 100%;
     align-items: center;
-    padding: 0; /* 移除 li 的默认 padding，由内部 span 控制 */
-    /* height: ITEM_HEIGHT; -- 高度由 react-window 控制 */
     box-sizing: border-box;
-    border-bottom: 1px solid var(--border-primary, #eee); /* 列表项之间的分隔线 */
-    cursor: default; /* 默认光标，双击时会变 */
-    transition: background-color 0.15s ease;
+    cursor: pointer;
+    border-radius: var(--border-radius-middle);
+    transition: background-color 0.2s ease, transform 0.15s ease-out, box-shadow 0.2s ease;
+
+    /* --- 液体玻璃效果核心样式 --- */
+    background: var(--glass-bg, rgba(255, 255, 255, 0.25)); /* 半透明背景 */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+    box-shadow: 0 2px 8px var(--glass-shadow, rgba(0, 0, 0, 0.1)); /* 轻微的阴影增加立体感 */
+
+    /* 确保文字颜色在玻璃背景下清晰可见 */
+    color: var(--glass-text-primary, var(--app-text-color));
 }
 .explorer-item:last-child {
     border-bottom: none;
@@ -223,21 +225,32 @@
     outline-offset: -2px;
 }
 
-.explorer-item > span { /* 列表项的单元格 */
-    padding: 0.5rem 0.75rem; /* 单元格内边距 */
+.explorer-item > span {
+    padding: 0.5rem 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex; /* 用于垂直居中 */
+    display: flex;
     align-items: center;
     font-size: 0.9em;
 }
 
+/*.explorer-item .item-icon {*/
+/*    font-size: 1.2em; !* 图标大小 *!*/
+/*    text-align: center;*/
+/*}*/
 .explorer-item .item-icon {
-    font-size: 1.2em; /* 图标大小 */
-    color: var(--text-secondary, #555);
-    text-align: center;
+    color: var(--glass-text-secondary, var(--text-secondary));
+    width: 40px; /* 与表头的图标列宽度一致 */
+    flex-shrink: 0; /* 防止被压缩 */
+    font-size: 0.9rem;
+    display: flex; /* 确保 FileIcon 组件能正确对齐 */
+    justify-content: center; /* 水平居中 FileIcon 组件 */
+    align-items: center; /* 垂直居中 FileIcon 组件 */
+    margin-right: 0; /* 移除之前的 margin，因为 FileIcon 内部的 .file-icon-svg 有 margin */
+    padding: 0 0.5rem 0 0.25rem; /* 调整内边距以优化图标位置 */
 }
+
 .explorer-item .item-name {
     padding: 0 0.2rem;
     white-space: nowrap;
@@ -272,7 +285,7 @@
     color: var(--text-secondary, #777);
     font-style: italic;
 }
-/* ... (progress bar 颜色样式保持不变) ... */
+
 .file-explorer-page-container {
     height: 100%; /* 确保它填满父容器 (app-main-content) */
     width: 100%;

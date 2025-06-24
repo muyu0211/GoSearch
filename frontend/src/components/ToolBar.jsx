@@ -151,14 +151,11 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
     };
 
     // 查看检索说明
-    const handleCheckRetrieveDes = async () => { // 假设 GetRetrieveDes 是异步的
+    const handleCheckRetrieveDes = async () => {
         try {
             const message = await GetRetrieveDes(); // 调用并等待
-            if (message) { // 检查是否有返回消息
-                toast.info(message);
-            }
         } catch (error) {
-            toast.error(String(error)); // 将错误对象转为字符串
+            toast.error(String(error));
         }
     };
 
@@ -179,17 +176,16 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
     const clearDatesAndSearch = () => {
         setStartDate(null);
         setEndDate(null);
-        if (editablePath.trim() && !isAbsolutePath(editablePath.trim())) { // 如果输入框有搜索词
+        if (editablePath.trim() && !isAbsolutePath(editablePath.trim())) {
             onSearchFile(editablePath.trim(), isLLMSearch, { startDate: null, endDate: null });
         } else {
-            // 如果输入框是路径或空的，刷新当前路径（不带日期过滤）
             onPathSubmit(currentPath);
         }
         setShowDatePicker(false);
     };
 
     return (
-        <div className="explorer-toolbar"> {/* 或者你的 toolbar-container 类名 */}
+        <div className="explorer-toolbar">
             <div className="navigation-buttons">
                 <button onClick={onGoBack} disabled={currentPath === "" && historyPath.length === 0} title={t('Go Up')}
                         className={"goUpBtn"}>⬆️
@@ -198,7 +194,7 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
                 </button>
             </div>
 
-            <div className="path-input-container"> {/* 这个容器保持不变，用于边框和聚焦效果 */}
+            <div className="path-input-container">
                 {isEditingPath ? (
                     <form onSubmit={handleEditablePathSubmit} className="path-edit-form">
                         <input
@@ -222,7 +218,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
                     />
                 )}
             </div>
-            {/*<div className="toolbar-actions"> /!* 将右侧按钮包裹起来 *!/*/}
                 <div className="date-picker-container" ref={datePickerRef}>
                     <button
                         onClick={toggleDatePicker}
@@ -234,13 +229,14 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
                     >
                         📅
                     </button>
-                    {showDatePicker && ( // 条件渲染日期选择器
-                        <div className={`date-picker-dropdown open`}> {/* 移除动态类，直接用 showDatePicker 控制 */}
+                        <div
+                            className={`date-picker-dropdown ${showDatePicker ? 'open' : 'closed'}`}> {/* 移除动态类，直接用 showDatePicker 控制 */}
                             <div className="date-picker-header">
                                 <span>{t('Select Date Range')}</span>
                                 {(startDate || endDate) && (
-                                    <button onClick={clearDatesAndSearch} className="clear-date-btn" title={t('Clear Dates')}>
-                                        ❌
+                                    <button onClick={clearDatesAndSearch} className="clear-date-btn"
+                                            title={t('Clear Dates')}>
+                                        ×
                                     </button>
                                 )}
                             </div>
@@ -268,22 +264,21 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
                                     />
                                 </div>
                             </div>
-                            {/*<button onClick={() => { handleSubmitLogic(editablePath.trim()); setShowDatePicker(false); }} className="apply-date-filter-btn">*/}
-                            {/*    {t('Apply & Search')}*/}
-                            {/*</button>*/}
                         </div>
-                    )}
-                </div>
-                <button
-                    onClick={toggleLLMSearchMode}
-                    title={isLLMSearch ? t('Switch to Standard Search') : t('Switch to LLM Search')}
-                    className={`llm-toggle-btn header-action-btn ${isLLMSearch ? 'active' : ''}`}
-                >
-                    🧠
-                </button>
-                <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn header-action-btn">📑</button>
-                <button onClick={() => onRefresh(currentPath)} title={t('Refresh')} className="refreshBtn header-action-btn">🔄</button>
-            {/*</div>*/}
+                    </div>
+            <button
+                onClick={toggleLLMSearchMode}
+                title={isLLMSearch ? t('Switch to Standard Search') : t('Switch to LLM Search')}
+                className={`llm-toggle-btn header-action-btn ${isLLMSearch ? 'active' : ''}`}
+            >
+                🧠
+            </button>
+            <button onClick={handleCheckRetrieveDes} title={t('Retrieve Description')}
+                    className="retrieveDesBtn header-action-btn">📑
+            </button>
+            <button onClick={() => onRefresh(currentPath)} title={t('Refresh')}
+                    className="refreshBtn header-action-btn">🔄
+            </button>
         </div>
     );
 }

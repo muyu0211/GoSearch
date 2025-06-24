@@ -26,19 +26,13 @@ func NewAPI() *API {
 		userData *service.UData
 		err      error
 	)
+
 	if bootConf, appConf, err = service.EnsureConfigInitialized(); err != nil {
 		log.Println("Get AppConfig Error:", err)
-		return nil
 	}
 
 	if userData, err = service.GetUserData(); err != nil {
-		log.Println("Get User Data Error:", err)
-		return nil
-	}
-
-	if err = service.EnsureInitialLLM(); err != nil {
-		log.Println("Get LLM Error")
-		return nil
+		log.Print("Get User Data Error:", err)
 	}
 
 	return &API{

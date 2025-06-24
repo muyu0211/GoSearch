@@ -30,14 +30,12 @@ type Message struct {
 // EnsureInitialLLM 确保大模型对象被初始化
 func EnsureInitialLLM() error {
 	var err error = nil
-	llmOnce.Do(func() {
-		if userData == nil {
-			if userData, err = GetUserData(); err != nil || userData == nil {
-				return
-			}
-		}
-	})
-	err = loadLLM(userData)
+	if userData, err = GetUserData(); err != nil {
+		log.Print("初始化大模型出错:", err)
+	}
+	if err = loadLLM(userData); err != nil {
+		log.Print("初始化大模型出错:", err)
+	}
 	return err
 }
 

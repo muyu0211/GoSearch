@@ -12,6 +12,7 @@ function SystemMonitor({ isOpen, onClose }) {
     const [sysInfo, setSysInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const intervalRef = useRef(null);
+    const popupRef = useRef(null);
 
     const fetchData = async () => {
         try {
@@ -26,8 +27,8 @@ function SystemMonitor({ isOpen, onClose }) {
 
     useEffect(() => {
         if (isOpen) {
-            setIsLoading(true); // 每次展开时先显示加载
-            fetchData(); // 立即获取一次数据
+            setIsLoading(true);
+            fetchData();
             intervalRef.current = setInterval(fetchData, UPDATE_INTERVAL);
         } else {
             if (intervalRef.current) {
@@ -43,15 +44,15 @@ function SystemMonitor({ isOpen, onClose }) {
         };
     }, [isOpen]); // 依赖 isOpen 状态
 
-    if (!isOpen) {
-        return null; // 如果未展开，不渲染任何东西
-    }
+    // if (!isOpen) {
+    //     return null; // 如果未展开，不渲染任何东西
+    // }
 
     return (
-        <div className="system-monitor-popup">
+        <div ref={popupRef} className={`system-monitor-popup ${isOpen ? 'open' : ''}`} >
             <button onClick={onClose} className="close-monitor-btn" title={t('Close')}>×</button>
             <h4>{t('System Monitor')}</h4>
-            {isLoading && !sysInfo ? (
+            {(isLoading && isOpen) && !sysInfo ? (
                 <p>{t('Loading system info')}</p>
             ) : sysInfo ? (
                 <div className="sys-info-grid">
@@ -102,9 +103,9 @@ function SystemMonitor({ isOpen, onClose }) {
                         <span className="value">{sysInfo.mem_all > 0 ? formatBytes(sysInfo.mem_all):0}</span>
                     </div>
                 </div>
-            ) : (
+            ) : (!isLoading && isOpen) ?(
                 <p>{t('Could not load system info.')}</p>
-            )}
+            ): null}
         </div>
     );
 }

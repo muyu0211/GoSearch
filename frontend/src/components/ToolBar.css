@@ -92,39 +92,37 @@
 }
 
 /* 日期选择器相关样式 */
-/* 日期选择器相关样式 */
 .date-picker-container {
-    position: relative; /* 确保 dropdown 能相对于它定位 */
+    position: relative;
 }
 
 .date-picker-dropdown {
     position: absolute;
-    right: 0; 
-    top: calc(120% + 8px); /* 在按钮下方，留一点间隙 */
+    right: 0;
+    top: calc(120% + 10px); /* 在按钮下方，留一点间隙 */
     background-color: var(--header-bg-color);
     border: 1px solid var(--input-border-color);
     border-radius: var(--border-radius-large);
     box-shadow: 0 4px 10px var(--shadow-primary, rgba(0, 0, 0, 0.1));
     padding: 0.7rem;
     z-index: 1000; /* 确保在最上层 */
-    min-width: 280px; /* 调整最小宽度以容纳日期输入框 */
+    min-width: 250px; /* 调整最小宽度以容纳日期输入框 */
 
+    /* 初始状态 (关闭/隐藏) */
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s;
+    transform: scaleY(0.95) translateY(-10px); /* 轻微向上移并缩小 */
+    transform-origin: top center; /* 动画基点在顶部中间 */
+    pointer-events: none; /* 关闭时不可交互 */
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
 
 .date-picker-dropdown.open {
-    /* 打开状态 */
     opacity: 1;
     transform: translateY(0) scale(1);
     visibility: visible;
-    pointer-events: auto; /* 打开时可交互 */
-    transition-delay: 0s; /* 打开时立即开始 visibility 过渡 */
+    pointer-events: auto;
+    transition-delay: 0s;
 }
-
 
 .date-picker-header {
     display: flex;
@@ -132,7 +130,7 @@
     align-items: center;
     margin-bottom: 0.75rem; /* 增加与下方输入框的间距 */
     padding-bottom: 0.5rem; /* 在标题下方加一点内边距 */
-    border-bottom: 1px solid var(--input-border-color); /* 标题和内容之间的分隔线 */
+    border-bottom: 1px solid var(--input-border-color);
     font-size: 0.9em;
     color: var(--input-text-color, var(--app-text-color));
 }
@@ -141,7 +139,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1em; /* 让 'X' 更大一点，更容易点击 */
+    font-size: 1.5em;
     /* padding: 0.2rem; */
     line-height: 1;
     color: var(--text-secondary, #888); /* 使用次要文本颜色 */
@@ -164,11 +162,12 @@
 }
 
 .date-input-group label {
-    /* white-space: nowrap; */ /* 如果标签文本可能很长，你可能不希望它换行 */
-    margin-right: 0.5rem; /* 如果不用 gap，可以用 margin 来控制间距 */
+     /*white-space: nowrap;   !*如果标签文本可能很长，你可能不希望它换行*!*/
+    margin-right: 0.2rem; /* 如果不用 gap，可以用 margin 来控制间距 */
     font-size: 0.9em;     /* (可选) 调整标签字体大小 */
     color: var(--text-secondary, #555); /* (可选) 使用主题变量 */
     flex-shrink: 0;       /* 防止标签在空间不足时被压缩 */
+    width: 30px;
 }
 
 .date-input {
@@ -181,6 +180,7 @@
     color: var(--input-text-color, var(--app-text-color));
     font-size: 1.1em;
 }
+
 .date-input:focus { /* 添加聚焦样式 */
     outline: none;
     border-color: var(--input-focus-border-color);

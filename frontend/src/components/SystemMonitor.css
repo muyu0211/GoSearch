@@ -1,27 +1,38 @@
 /* frontend/src/components/SystemMonitor.css */
 .system-monitor-popup {
-    position: absolute;
-    top: calc(100% + 10px); /* 在 SearchBar 下方，留一点间隙 */
-    right: 10px; /* 对齐到 SearchBar 的右侧 */
-    width: 300px; /* 或你期望的宽度 */
+    position: absolute; /* 或者由其 wrapper 控制 */
+    top: calc(100% + 10px);
+    right: 10px;
+    width: 300px;
     max-width: 90vw;
-    background-color: var(--header-bg-color); /* 使用头部背景色或卡片背景色 */
+    background-color: var(--header-bg-color);
     color: var(--app-text-color);
     border: 1px solid var(--input-border-color);
     border-radius: 6px;
     box-shadow: 0 4px 12px var(--shadow-primary, rgba(0, 0, 0, 0.1));
     padding: 1rem;
-    z-index: 100; /* 确保在其他元素之上 */
+    z-index: 100; /* 由 wrapper 控制可能更好 */
+
+    /* 初始状态 (关闭/隐藏) */
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-    animation: fadeInMonitor 0.3s forwards ease-out;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-10px) scale(0.95); /* 从上方轻微滑入并展开 */
+    transform-origin: top right; /* 动画基点在右上角，更符合 top-right 定位 */
+    visibility: hidden; /* 初始隐藏，不占用空间，不可交互 */
+    pointer-events: none;
+
+    /* 过渡应用于这些属性 */
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out, visibility 0s linear 0.25s;
+    /* 当关闭时 (open -> default)，visibility 会在 0.25s 后变为 hidden */
 }
 
-/* 也可以用一个类来控制显示/隐藏的动画 */
 .system-monitor-popup.open {
     opacity: 1;
     transform: translateY(0) scale(1);
+    visibility: visible; /* 打开时可见 */
+    pointer-events: auto;
+    /* 打开时的过渡 (visibility 会立即生效，因为没有延迟) */
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    /* transition-delay: 0s; -- 这个通常不需要 */
 }
 
 @keyframes fadeInMonitor {
@@ -30,7 +41,6 @@
         transform: translateY(0) scale(1);
     }
 }
-
 
 .system-monitor-popup h4 {
     margin-top: 0;

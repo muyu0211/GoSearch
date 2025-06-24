@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,14 +38,12 @@ func EnsureDirExists(dirPath string, perms os.FileMode) error {
 
 	// 目录不存在 则递归创建文件夹
 	if !exist {
-		log.Printf("Directory %s does not exist, creating with permissions %o...", dirPath, perms)
 		if err = os.MkdirAll(dirPath, perms); err != nil {
 			if os.IsPermission(err) {
 				return fmt.Errorf("permission denied to create directory at %s: %v", dirPath, err)
 			}
 			return fmt.Errorf("failed to create  directory at %s: %v", dirPath, err)
 		}
-		log.Printf("Directory %s created successfully.", dirPath)
 	}
 	return nil
 }
@@ -62,9 +59,9 @@ func StoreFile(path string, data []byte) error {
 
 	if err := os.WriteFile(path, data, 0644); err != nil {
 		if os.IsPermission(err) {
-			return fmt.Errorf("permission denied to write file at %s: %v", path, err)
+			return fmt.Errorf("permission denied to write data at %s: %v", path, err)
 		}
-		return fmt.Errorf("StoreFile: failed to write config to %s: %w", path, err)
+		return fmt.Errorf("StoreFile: failed to write data to %s: %w", path, err)
 	}
 	return nil
 }

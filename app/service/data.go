@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
+	"log"
 	"reflect"
 	"sync"
 )
@@ -25,49 +26,53 @@ type UData struct {
 
 func GetUserData() (*UData, error) {
 	var (
-		dataFilePath string
-		err          error
-		exist        bool
-		data         []byte
+		dataFilePath    string
+		err             error
+		exist           bool
+		data            []byte
+		defaultUserData *UData
 	)
 	// 应用启动只读取一次文件
 	userDataOnce.Do(func() {
-		// 确保配置文件已经初始化完成
-		_, appConf, err = EnsureConfigInitialized()
+		_, appConf, _ = EnsureConfigInitialized()
 		dataDir := appConf.CustomDataDir
 		dataFilePath = utils.Join(dataDir, utils.UserDataFileName)
+		defaultUserData = &UData{
+			dataFilePath: dataFilePath,
+			uLock:        &sync.RWMutex{},
+		}
+
+		// 1.判断是否存在数据文件
 		if exist, err = utils.IsPathExist(dataFilePath); err != nil {
 			return
 		}
+		// 2.不存在则创建
 		if !exist {
-			defaultUserData := &UData{
-				dataFilePath: dataFilePath,
-				uLock:        &sync.RWMutex{},
-			}
-			if data, err = json.MarshalIndent(defaultUserData, "", " "); err != nil {
-				err = fmt.Errorf("failed to marshal default user data: %w", err)
-				return
-			}
+			data, _ = json.MarshalIndent(defaultUserData, "", " ")
 			if err = utils.EnsureDirExists(dataDir, 0755); err != nil {
+				log.Println(err)
 				return
 			}
 			if err = utils.StoreFile(dataFilePath, data); err != nil {
+				log.Println(err)
 				return
 			}
 			userData = defaultUserData
 			return
 		}
-		// 存在则直接解析
-		userData = &UData{
-			dataFilePath: dataFilePath,
-			uLock:        &sync.RWMutex{},
-		}
+
+		// 3.存在则直接解析
+		userData = defaultUserData
 		if err = parseUserData(dataDir, userData); err != nil {
 			return
 		}
+
+		if err != nil && userData == nil {
+			userData = defaultUserData
+		}
 	})
 
-	return userData, err
+	return userData, nil
 }
 
 func parseUserData(dirPath string, userData *UData) error {
@@ -89,12 +94,8 @@ func (u *UData) SetUserData(newUserData *UData) error {
 	u.uLock.Lock()
 	defer u.uLock.Unlock()
 
-	var (
-		err error
-	)
-	if _, err = GetUserData(); err != nil {
-		return fmt.Errorf("user data is nil")
-	}
+	// 确保userData对象不为nil
+	GetUserData()
 
 	curDataVal := reflect.ValueOf(u).Elem()
 	newDataVal := reflect.ValueOf(newUserData).Elem()

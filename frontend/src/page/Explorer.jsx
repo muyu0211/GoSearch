@@ -10,8 +10,9 @@ import { formatBytes, formatDate, getParentPath } from "../assets/utils/utils.js
 // 导入自定义 Hooks
 import { useNavigation } from '../hooks/useNavigation';
 import { useSearch } from '../hooks/useSearch';
+import FileIcon from "../components/FileIcon.jsx";
 
-const ITEM_HEIGHT = 43;
+const ITEM_HEIGHT = 40;
 
 function Explorer() {
     const { t } = useTranslation();
@@ -95,7 +96,7 @@ function Explorer() {
                     onDoubleClick={() => handleItemDoubleClick(item)}
                     onContextMenu={(e) => handleItemRightClick(e, item)}
                     className={`explorer-item ${selectedItemPath === item.path ? 'selected' : ''}`}
-                    tabIndex={-1} // List 组件会处理可访问性，单个项通常不需要 tabIndex=0
+                    tabIndex={-1}
                     title={item.path}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -103,9 +104,13 @@ function Explorer() {
                         }
                     }}
                 >
-                    <span className="item-icon">{item.is_dir ? '📁' : '📄'}</span>
+                    {/*<span className="item-icon">{item.is_dir ? '📁' : '📄'}</span>*/}
+                    <span className="item-icon">
+                        <FileIcon fileName={item.name} isDir={item.is_dir}/>
+                    </span>
                     <span className="item-name" title={item.name}>{item.name}</span>
-                    <span className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : (item.is_dir ? '' : '-')}</span>
+                    <span
+                        className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : (item.is_dir ? '' : '-')}</span>
                     <span className="item-path">{getParentPath(item.path)}</span>
                     <span className="item-modified">{item.mod_time ? formatDate(item.mod_time) : ''}</span>
                 </li>
@@ -114,7 +119,7 @@ function Explorer() {
     });
 
     const LoadingSkeleton = () => {
-        const skeletonItems = Array.from({ length: 5 }).map((_, index) => (
+        const skeletonItems = Array.from({length: 5}).map((_, index) => (
             <div key={index} className="skeleton-item">
                 <div className="skeleton-avatar" />
                 <div className="skeleton-content">

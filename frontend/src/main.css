@@ -37,6 +37,12 @@ body {
 
     --shadow-primary: #7e7d7d;
     --shadow-secondary: #a6a6a6;
+
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: rgba(0, 0, 0, 0.1);
+    --glass-text-primary: var(--text-primary);
+    --glass-text-secondary: var(--text-secondary);
 }
 
 /* Light Theme (Default) */
@@ -88,13 +94,45 @@ body.theme-light {
     --border-primary: #dddddd;     /* 主要边框颜色 */
     --border-secondary: #cccccc;   /* 次要边框颜色 */
     --border-focus: #007bff;       /* 输入框聚焦边框 */
+
+    /* --- 基础图标颜色 --- */
+    --icon-primary-color: #5F6368;       /* 主要图标颜色 (中性深灰，Google 风格) */
+    --icon-secondary-color: #70757a;     /* 次要或禁用图标颜色 (稍浅的灰色) */
+    --icon-accent-color: var(--button-bg-color); /* 强调色图标 (使用按钮主色) */
+    --icon-on-accent-bg-color: var(--button-text-color); /* 在强调色背景上的图标颜色 (通常是白色) */
+
+    /* --- 语义化图标颜色 --- */
+    --icon-success-color: #34A853;       /* 成功 (绿色，Google 风格) */
+    --icon-warning-color: #FBBC05;       /* 警告 (黄色，Google 风格) */
+    --icon-error-color: #EA4335;         /* 错误 (红色，Google 风格) */
+    --icon-info-color: var(--settings-accent-color, #1A73E8); /* 信息 (蓝色，Google 风格或你的设置强调色) */
+
+    /* --- 特定文件类型图标颜色 (示例) --- */
+    --icon-folder-color: #FFCA28;        /* 文件夹 (琥珀黄，Google Drive 风格) */
+    --icon-image-color: #44adf5;         /* 图片 (蓝色) */
+    --icon-video-color: #F44336;         /* 视频 (红色) */
+    --icon-audio-color: #9C27B0;         /* 音频 (紫色) */
+    --icon-document-color: #117dd5;      /* 文档 (蓝色) */
+    --icon-sheet-color: #0F9D58;         /* 表格 (深绿) */
+    --icon-slide-color: #FF9800;         /* 演示文稿 (橙色) */
+    --icon-pdf-color: #DB4437;           /* PDF (红色) */
+    --icon-archive-color: #795548;       /* 压缩包 (棕色) */
+    --icon-code-color: #00BCD4;          /* 代码 (青色) */
+    --icon-text-file-color: var(--icon-primary-color); /* 普通文本文件用主图标色 */
+    --icon-unknown-file-color: var(--icon-secondary-color); /* 未知文件用次要图标色 */
+
+    /* --- 其他 UI 图标 --- */
+    --icon-navigation-color: var(--icon-primary-color); /* 导航按钮图标 */
+    --icon-settings-action-color: var(--icon-primary-color); /* 头部设置、主题切换等图标 */
+    --icon-clear-button-color: #9e9e9e; /* 清除按钮 'X' */
+    --icon-close-button-color: var(--icon-primary-color); /* 关闭按钮 'X' */
 }
 
 /* Dark Theme */
 body.theme-dark {
     --bg-primary: #1a1a2e;         /* 深色主背景 */
     --bg-secondary: #242f40;       /* 深色卡片、面板背景 */
-    --bg-tertiary: #3a3a5e;        /* 深色悬停、边框 */
+    --bg-tertiary: rgba(95, 95, 129, 0.36);        /* 深色悬停、边框 */
     --bg-accent: #1e90ff;          /* 深色主题强调色 (亮蓝色) */
     --bg-accent-hover: #0073e6;    /* 深色强调色悬停 */
     --bg-disabled: #4a4a6a;        /* 深色禁用背景 */
@@ -144,6 +182,44 @@ body.theme-dark {
     --scrollbar-track-bg: var(--preview-bg-color, #2c2c2c); /* 深色主题轨道背景 (使用卡片背景色或稍浅一点) */
     --scrollbar-thumb-bg: var(--settings-button-bg-color, #424242); /* 深色主题滑块背景 (使用按钮背景或稍亮一点的灰色) */
     --scrollbar-thumb-hover-bg: var(--settings-button-hover-bg-color, #525252); /* 深色主题滑块悬停背景 */
+
+    --glass-bg: rgba(40, 48, 70, 0.35);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-shadow: rgba(0, 0, 0, 0.2);
+    --glass-text-primary: var(--text-primary);
+    --glass-text-secondary: var(--text-secondary);
+
+    /* --- 基础图标颜色 --- */
+    --icon-primary-color: #BDC1C6;       /* 主要图标颜色 (浅灰，Google 深色风格) */
+    --icon-secondary-color: #9AA0A6;     /* 次要或禁用图标颜色 (稍暗的浅灰) */
+    --icon-accent-color: var(--button-bg-color); /* 强调色图标 (使用按钮主色，确保在深色背景下对比度足够) */
+    --icon-on-accent-bg-color: var(--button-text-color);
+
+    /* --- 语义化图标颜色 (通常可以保持与亮色主题一致，或略微调整饱和度和亮度) --- */
+    --icon-success-color: #81C784;       /* 成功 (浅绿) */
+    --icon-warning-color: #FFD54F;       /* 警告 (浅黄) */
+    --icon-error-color: #E57373;         /* 错误 (浅红) */
+    --icon-info-color: var(--settings-accent-color, #82B1FF); /* 信息 (浅蓝或你的设置强调色) */
+
+    /* --- 特定文件类型图标颜色 (调整以适应深色背景) --- */
+    --icon-folder-color: #FDD835;        /* 文件夹 (稍亮的黄色) */
+    --icon-image-color: #60bbf6;         /* 图片 (浅绿) */
+    --icon-video-color: #E57373;         /* 视频 (浅红) */
+    --icon-audio-color: #BA68C8;         /* 音频 (浅紫) */
+    --icon-document-color: #90CAF9;      /* 文档 (浅蓝) */
+    --icon-sheet-color: #66BB6A;         /* 表格 (中绿) */
+    --icon-slide-color: #FFB74D;         /* 演示文稿 (浅橙) */
+    --icon-pdf-color: #EF5350;           /* PDF (中红) */
+    --icon-archive-color: #A1887F;       /* 压缩包 (浅棕) */
+    --icon-code-color: #4DD0E1;          /* 代码 (浅青) */
+    --icon-text-file-color: var(--icon-primary-color);
+    --icon-unknown-file-color: var(--icon-secondary-color);
+
+    /* --- 其他 UI 图标 --- */
+    --icon-navigation-color: var(--icon-primary-color);
+    --icon-settings-action-color: var(--icon-primary-color);
+    --icon-clear-button-color: #757575;
+    --icon-close-button-color: var(--icon-primary-color);
 }
 
 /* 其他组件也应该使用 CSS 变量 */
