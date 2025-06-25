@@ -28,7 +28,7 @@ func NewAPI() *API {
 	)
 
 	if bootConf, appConf, err = service.EnsureConfigInitialized(); err != nil {
-		log.Println("Get AppConfig Error:", err)
+		log.Println("NewAPI:Get AppConfig Error:", err)
 	}
 
 	if userData, err = service.GetUserData(); err != nil {
@@ -49,13 +49,13 @@ func (api *API) CloseResource() {
 	// 保存配置文件
 	if api.appConf != nil {
 		if err = api.appConf.StoreAppConfig(); err != nil {
-			log.Printf("Shutdown error: %v", err.Error())
+			log.Printf("save app config error: %v", err.Error())
 		}
 	}
 	// 保存用户数据文件
 	if api.userData != nil {
 		if err = api.userData.StoreUserData(); err != nil {
-			log.Printf("Shutdown error: %v\n", err.Error())
+			log.Printf("save user data error: %v\n", err.Error())
 		}
 	}
 }
@@ -74,18 +74,29 @@ func (api *API) GetBootConfig() (*service.BootAppConfig, error) {
 	return nil, fmt.Errorf("boot config is nil")
 }
 
-func (api *API) SetAppConfig(config *service.AppConfig) error {
-	// 对比字段, 防止前端传递过来的空字段值覆盖配置文件
-	if err := api.appConf.SetAppConfig(config); err != nil {
+// SetBootConfig 修改用户配置文件和数据文件保存位置
+func (api *API) SetBootConfig(desDir string) error {
+	var err error
+	if err = api.bootConf.SetBootConfig(desDir); err != nil {
 		return err
+	}
+	// 通常修改了数据文件路径后需要保存一次文件
+	if api.appConf != nil {
+		if err = api.appConf.StoreAppConfig(); err != nil {
+			log.Printf("save app config error: %v", err.Error())
+		}
+	}
+	if api.userData != nil {
+		if err = api.userData.StoreUserData(); err != nil {
+			log.Printf("save user data error: %v\n", err.Error())
+		}
 	}
 	return nil
 }
 
-// SetBootConfig 修改用户配置文件和数据文件保存位置
-func (api *API) SetBootConfig(desDir string) error {
+func (api *API) SetAppConfig(config *service.AppConfig) error {
 	// 对比字段, 防止前端传递过来的空字段值覆盖配置文件
-	if err := api.bootConf.SetBootConfig(desDir); err != nil {
+	if err := api.appConf.SetAppConfig(config); err != nil {
 		return err
 	}
 	return nil
@@ -119,6 +130,7 @@ func (api *API) TestLLM() (string, error) {
 }
 
 // ============ 绑定SystemInfo api ============
+
 func (api *API) GetSystemInfo() (*service.SystemInfo, error) {
 	// 获取单例对象
 	instance := service.GetSysInfoInstance()

@@ -11,10 +11,12 @@ import { formatBytes, formatDate, getParentPath } from "../assets/utils/utils.js
 import { useNavigation } from '../hooks/useNavigation';
 import { useSearch } from '../hooks/useSearch';
 import FileIcon from "../components/FileIcon.jsx";
+import { OpenFile } from "../../wailsjs/go/controller/FileController"
+import PreviewModal from "../components/PreviewModel.jsx";
 
 const ITEM_HEIGHT = 40;
 
-function Explorer() {
+function Explorer(callback, deps) {
     const { t } = useTranslation();
     const { currentPath,
             historyPath,
@@ -44,6 +46,12 @@ function Explorer() {
     const [rightClickModelItem, setRightClickModelItem] = useState(null);
     const [selectedItemPath, setSelectedItemPath] = useState(null); // 用于高亮选中项
 
+    // --- PreviewModal 相关的 State ---
+    const [showPreview, setShowPreview] = useState(false);
+    const [previewItem, setPreviewItem] = useState(null);
+    const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
+    const hoverTimeoutRef = useRef(null);
+
     // 组件首次加载
     useEffect(() => {
         loadData('');
@@ -65,8 +73,12 @@ function Explorer() {
         if (item.is_dir && item.path && item.path !== currentPath) {
             await navigateToPath(item.path);
         } else if (!item.is_dir) {
-            toast.info(t("Opening file: {{name}} (not yet implemented)", { name: item.name }));
-            // OpenFileWithDefaultProgram(item.path);
+            // toast.info(t("Opening file: {{name}} (not yet implemented)", { name: item.name }));
+            try {
+                await OpenFile(item.path);
+            }catch (error){
+                toast.error(error)
+            }
         }
     }, [currentPath, navigateToPath, t]);
 
@@ -82,9 +94,37 @@ function Explorer() {
         setRightClickModelItem(null);
     };
 
+    const handleItemMouseEnter = useCallback((event, item) => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+        // 如果预览已经显示，并且是针对同一个项目，则不执行任何操作
+        if (showPreview && previewItem && previewItem.path === item.path) {
+            return;
+        }
+        // 设置一个短暂的延迟后显示预览，避免鼠标快速划过时频繁触发
+        hoverTimeoutRef.current = setTimeout(() => {
+            setPreviewItem(item);
+            setPreviewPosition({ x: event.clientX, y: event.clientY });
+            setShowPreview(true);
+        }, 700);
+
+    }, [showPreview, previewItem]);
+
+    const handleItemMouseLeave = useCallback(() => {
+        // 当鼠标离开列表项时，清除计时器，并隐藏预览
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+            hoverTimeoutRef.current = null;
+        }
+        // 鼠标移开立即隐藏
+        setShowPreview(false);
+    }, []);
+
     // ====================================== 渲染逻辑 ======================================
     const FileListItem = React.memo(({ index, style, data }) => {
-        const { items, selectedItemPath, t, handleItemClick, handleItemDoubleClick, handleItemRightClick, formatBytes, formatDate, getParentPath } = data;
+        const { items, selectedItemPath, t, handleItemClick, handleItemDoubleClick, handleItemRightClick,
+                formatBytes, formatDate, getParentPath, handleItemMouseEnter, handleItemMouseLeave } = data;
         const item = items[index];
 
         if (!item) return null;
@@ -95,9 +135,11 @@ function Explorer() {
                     onClick={() => handleItemClick(item)}
                     onDoubleClick={() => handleItemDoubleClick(item)}
                     onContextMenu={(e) => handleItemRightClick(e, item)}
+                    onMouseEnter={(e) => handleItemMouseEnter(e, item)}
+                    onMouseLeave={handleItemMouseLeave}
                     className={`explorer-item ${selectedItemPath === item.path ? 'selected' : ''}`}
                     tabIndex={-1}
-                    title={item.path}
+                    // title={item.path}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             handleItemDoubleClick(item);
@@ -108,7 +150,7 @@ function Explorer() {
                     <span className="item-icon">
                         <FileIcon fileName={item.name} isDir={item.is_dir}/>
                     </span>
-                    <span className="item-name" title={item.name}>{item.name}</span>
+                    <span className="item-name">{item.name}</span>
                     <span
                         className="item-size">{!item.is_dir && item.size > 0 ? formatBytes(item.size) : (item.is_dir ? '' : '-')}</span>
                     <span className="item-path">{getParentPath(item.path)}</span>
@@ -225,7 +267,8 @@ function Explorer() {
         const itemDataContext = {
             items: finalItemsToRender, selectedItemPath, t,
             handleItemClick, handleItemDoubleClick, handleItemRightClick,
-            formatBytes, formatDate, getParentPath, listType
+            formatBytes, formatDate, getParentPath, listType,
+            handleItemMouseEnter, handleItemMouseLeave // <--- 将新的事件处理器传递给 FileListItem
         };
 
         if (isLoadingNavigation && listType === 'files' && finalItemsToRender.length === 0) return <LoadingSkeleton />;
@@ -319,6 +362,12 @@ function Explorer() {
                 onDoubleClick={handleItemDoubleClick}
                 onClose={closeContextMenu}
                 loadData={refreshCurrentView}
+            />
+            <PreviewModal
+                isOpen={showPreview}
+                item={previewItem}
+                position={previewPosition}
+                // onClose={() => setShowPreview(false)} // 通常悬停预览不需要内部关闭按钮
             />
         </div>
     );

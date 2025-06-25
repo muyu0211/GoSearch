@@ -18,6 +18,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 	)
 	api := NewAPI()
 	dirController := NewDirController()
+	fileController := NewFileController()
 
 	app := application.NewWithOptions(&options.App{
 		Title:  "GoSearch",
@@ -31,6 +32,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 		OnStartup: func(ctx context.Context) {
 			api.setCtx(ctx)
 			dirController.setCtx(ctx)
+			//fileController.setCtx(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
 			api.CloseResource()
@@ -39,6 +41,7 @@ func GoSearchRun(assets embed.FS, port int, icon []byte) {
 		Bind: []interface{}{
 			api,
 			dirController,
+			fileController,
 		},
 		Mac: &mac.Options{
 			TitleBar: mac.TitleBarDefault(),

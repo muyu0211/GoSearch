@@ -7,20 +7,14 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 	"log"
 	"strings"
-	"sync"
 	"time"
 )
 
 var (
-	llm     *openai.LLM
-	temp    = 0.6
-	llmOnce sync.Once
+	llm  *openai.LLM
+	temp = 0.6
+	//llmOnce sync.Once
 )
-
-type Request struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-}
 
 type Message struct {
 	Role    string `json:"role"`
@@ -39,7 +33,7 @@ func EnsureInitialLLM() error {
 	return err
 }
 
-// LoadLLM 初始化大模型
+// loadLLM 初始化大模型
 func loadLLM(conf *UData) error {
 	var (
 		err error
@@ -77,8 +71,7 @@ func ParseParamsFromLLM(query string) (*SearchParams, error) {
 		log.Println("模型输出失败:", err)
 		return nil, err
 	}
-	log.Println(response.Choices[0].Content)
-	log.Println("耗时：", time.Since(start))
+	log.Println("大模型输出耗时：", time.Since(start))
 
 	searchParams := &SearchParams{}
 	if err = utils.UnmarshalJSON(response.Choices[0].Content, searchParams); err != nil {

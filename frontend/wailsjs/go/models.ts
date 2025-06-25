@@ -60,7 +60,6 @@ export namespace service {
 	    app_version: string;
 	    theme: string;
 	    language: string;
-	    custom_data_dir: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -72,7 +71,6 @@ export namespace service {
 	        this.app_version = source["app_version"];
 	        this.theme = source["theme"];
 	        this.language = source["language"];
-	        this.custom_data_dir = source["custom_data_dir"];
 	    }
 	}
 	export class BootAppConfig {

@@ -29,7 +29,7 @@ type SearchParams struct {
 
 type SearchResponse struct {
 	Items      []*service.FileSystemEntry `json:"items"`
-	DurationNs time.Duration              `json:"duration_ns"` // 纳米
+	DurationNs time.Duration              `json:"duration_ns"`
 }
 
 func NewDirController() *DirController {
@@ -155,7 +155,6 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 	}, nil
 }
 
-// SearchItemFromInput 处理用户搜索框输入
 func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*SearchResponse, error) {
 	var (
 		params *service.SearchParams

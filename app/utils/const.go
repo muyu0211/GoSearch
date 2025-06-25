@@ -9,6 +9,7 @@ const (
 	ConfigFileName     = "config.json"
 	BootConfigFileName = "boot_config.json"
 	UserDataFileName   = "data.json"
+	LogDataFileName    = "log.txt"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 const (
 	WINDOWS = "windows"
 	LINUX   = "linux"
+	MAC     = "darwin"
 )
 
 var (

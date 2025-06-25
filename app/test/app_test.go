@@ -16,11 +16,11 @@ import (
 
 func TestSetAppConfig(t *testing.T) {
 	newConf := &service.AppConfig{
-		AppName:       "GoSearch",
-		AppVersion:    "1.1.1",
-		CustomDataDir: "E:\\Tools\\GoSearch",
-		Language:      "en",
-		Theme:         "light",
+		AppName:    "GoSearch",
+		AppVersion: "1.1.1",
+		//CustomDataDir: "E:\\Tools\\GoSearch",
+		Language: "en",
+		Theme:    "light",
 	}
 	bootConf, appConf, err := service.EnsureConfigInitialized()
 	if err != nil {
@@ -173,7 +173,7 @@ func TestDirWalk(t *testing.T) {
 	//BaseDir := "E:\\Tools\\SetUp"
 	cnt := 0
 
-	filepath.WalkDir(BaseDir, func(path string, d os.DirEntry, err error) error {
+	_ = filepath.WalkDir(BaseDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -186,7 +186,7 @@ func TestDirWalk(t *testing.T) {
 
 	start = time.Now()
 	cnt = 0
-	filepath.Walk(BaseDir, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(BaseDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -292,4 +292,9 @@ func TestSearchStream(t *testing.T) {
 		Query:       query,
 		CurrentPath: currDirPath,
 	})
+}
+
+func TestSetConfigDir(t *testing.T) {
+	api := controller.NewAPI()
+	api.SetBootConfig("E:\\Tools\\SetUp\\test-test")
 }

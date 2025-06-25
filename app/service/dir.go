@@ -130,7 +130,7 @@ func (dirCnt *DirContent) RenameItem(path, parentPath, newName string) error {
 }
 
 func (dirCnt *DirContent) DeleteItem(path string) error {
-	err := os.Remove(path)
+	err := utils.RemoveFile(path)
 	if err != nil {
 		log.Println(err)
 		strs := strings.Split(err.Error(), ":")

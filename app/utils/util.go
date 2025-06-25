@@ -2,8 +2,10 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,10 +22,12 @@ func IsPathExist(path string) (bool, error) {
 		return true, nil
 	}
 	if os.IsNotExist(err) {
-		return false, nil
+		return false, errors.New("file is not Exist")
+	} else if os.IsPermission(err) {
+		return false, errors.New("permission is denied")
+	} else { // 其他错误
+		return false, err
 	}
-	// 其他错误
-	return false, err
 }
 
 // EnsureDirExists 确保目录存在，如果不存在则创建 perms 通常是 0755 或 0700
@@ -32,12 +36,8 @@ func EnsureDirExists(dirPath string, perms os.FileMode) error {
 		exist bool
 		err   error
 	)
-	if exist, err = IsPathExist(dirPath); err != nil {
-		return fmt.Errorf("无法检查路径是否存在: %w", err)
-	}
-
 	// 目录不存在 则递归创建文件夹
-	if !exist {
+	if exist, _ = IsPathExist(dirPath); !exist {
 		if err = os.MkdirAll(dirPath, perms); err != nil {
 			if os.IsPermission(err) {
 				return fmt.Errorf("permission denied to create directory at %s: %v", dirPath, err)
@@ -66,10 +66,13 @@ func StoreFile(path string, data []byte) error {
 	return nil
 }
 
-// TODO:
 func RemoveFile(path string) error {
+	err := os.Remove(path)
+	if err != nil {
+		log.Printf("Remove %s error", path)
+		return err
+	}
 	return nil
-
 }
 
 func GetParentPath(os string, path string) (string, string) {

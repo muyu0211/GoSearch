@@ -108,14 +108,11 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
                 model: model.trim(),
                 base_url: baseURL.trim(),
             }
-            console.log("userDataToSave: ",userDataToSave)
             await SetUserData(userDataToSave);
             toast.success(t('User Data saved successfully!'));
         } catch (error) {
-            console.error("Error saving LLM configuration:", error);
             const errMsg = error && typeof error.message === 'string' ? error.message : t('Failed to save LLM configuration.');
             toast.error(errMsg)
-            toast.error(errMsg);
         } finally {
             setIsSavingUserData(false);
         }
@@ -123,9 +120,9 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
 
     const handleTestLLMConnection = async () => {
         setIsTestingLLM(true);
-        toast.info(t('Testing LLM connection...')); // 给用户一个即时反馈
+        // toast.info(t('Testing LLM connection...')); // 给用户一个即时反馈
         try {
-            await TestLLM(); // 后端 TestLLM 会自己弹窗
+            await TestLLM();
         } catch (err) {
         } finally {
             setIsTestingLLM(false);

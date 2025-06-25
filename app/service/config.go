@@ -23,11 +23,11 @@ var (
 
 // AppConfig 配置文件结构
 type AppConfig struct {
-	AppName       string `json:"app_name" mapstructure:"app_name"`
-	AppVersion    string `json:"app_version" mapstructure:"app_version"`
-	Theme         string `json:"theme" mapstructure:"theme"`
-	Language      string `json:"language" mapstructure:"language"`
-	CustomDataDir string `json:"custom_data_dir" mapstructure:"custom_data_dir"`
+	AppName    string `json:"app_name" mapstructure:"app_name"`
+	AppVersion string `json:"app_version" mapstructure:"app_version"`
+	Theme      string `json:"theme" mapstructure:"theme"`
+	Language   string `json:"language" mapstructure:"language"`
+	//CustomDataDir string `json:"custom_data_dir" mapstructure:"custom_data_dir"`
 }
 
 type BootAppConfig struct {
@@ -94,13 +94,9 @@ func GetBootConfig(bootConfigDir string) (*BootAppConfig, error) {
 		exist          bool
 		err            error
 	)
-	if exist, err = utils.IsPathExist(bootConfigPath); err != nil {
-		return nil, err
-	}
-	if exist {
+	if exist, _ = utils.IsPathExist(bootConfigPath); exist {
 		// 1. 引导文件存在则尝试解析
 		if err = ParseBootConfig(bootConfigPath, bootConf); err == nil {
-			// 解析成功直接返回
 			return bootConf, nil
 		}
 		// 解析失败尝试重新创建引导文件
@@ -128,17 +124,15 @@ func GetAppConfig(configDir string) (*AppConfig, error) {
 		err        error
 		data       []byte
 	)
-	if exist, err = utils.IsPathExist(configPath); err != nil {
-		return nil, err
-	}
+
 	// 1. 配置文件不存在则创建
-	if !exist {
+	if exist, _ = utils.IsPathExist(configPath); !exist {
 		defaultConf := &AppConfig{
-			AppName:       utils.AppName,
-			AppVersion:    utils.AppVersion,
-			Theme:         utils.Theme,
-			Language:      utils.Language,
-			CustomDataDir: configDir, // 用户数据文件存放至同一文件夹下
+			AppName:    utils.AppName,
+			AppVersion: utils.AppVersion,
+			Theme:      utils.Theme,
+			Language:   utils.Language,
+			//CustomDataDir: configDir, // 用户数据文件存放至同一文件夹下
 		}
 		if data, err = json.MarshalIndent(defaultConf, "", " "); err != nil {
 			return nil, fmt.Errorf("failed to marshal default main config: %w", err)
@@ -162,12 +156,12 @@ func GetAppConfig(configDir string) (*AppConfig, error) {
 
 // SetAppConfig 修改主配置信息
 func (appConf *AppConfig) SetAppConfig(newConf *AppConfig) error {
-	var (
-		err error
-	)
-	if _, _, err = EnsureConfigInitialized(); err != nil {
-		return fmt.Errorf("bootConf is nil")
-	}
+	//var (
+	//	err error
+	//)
+	//if _, _, err = EnsureConfigInitialized(); err != nil {
+	//	return fmt.Errorf("bootConf is nil")
+	//}
 
 	// 修改主配置信息时加锁
 	aLock.Lock()
@@ -215,7 +209,7 @@ func (appConf *AppConfig) StoreAppConfig() error {
 		return fmt.Errorf("data is nil")
 	}
 	// 保存文件
-	if err = utils.StoreFile(filepath.Join(bootConf.CustomConfigDir, utils.ConfigFileName), data); err != nil {
+	if err = utils.StoreFile(utils.Join(bootConf.CustomConfigDir, utils.ConfigFileName), data); err != nil {
 		return err
 	}
 	return nil
@@ -225,6 +219,7 @@ func (appConf *AppConfig) StoreAppConfig() error {
 func (bootConf *BootAppConfig) SetBootConfig(desDir string) error {
 	var (
 		bootDir string
+		oldDir  string
 		data    []byte
 		exist   bool
 		err     error
@@ -234,16 +229,13 @@ func (bootConf *BootAppConfig) SetBootConfig(desDir string) error {
 	defer bLock.Unlock()
 	// 判断文件夹是否存在
 	if exist, err = utils.IsPathExist(desDir); exist != true {
-		if err == nil {
-			// 如果文件夹不存在则创建
-			err = utils.EnsureDirExists(desDir, 0755)
-			if err != nil {
-				return err
-			}
-		} else {
+		// 如果文件夹不存在或其他问题引起的os读取异常，则尝试创建文件(夹)
+		err = utils.EnsureDirExists(desDir, 0755)
+		if err != nil {
 			return err
 		}
 	}
+	oldDir = bootConf.CustomConfigDir // 保存原来的数据文件夹
 	bootConf.CustomConfigDir = desDir
 	if bootDir, err = GetBootConfigDir(); err != nil {
 		log.Printf("Get Boot Config Dir Error")
@@ -252,13 +244,30 @@ func (bootConf *BootAppConfig) SetBootConfig(desDir string) error {
 	if data, err = json.MarshalIndent(bootConf, "", " "); err != nil {
 		return fmt.Errorf("failed to marshal default main config: %w", err)
 	}
-	// 修改文件
+
+	// 1.先删除当前的文件，在新的路径下保存文件
+	entries, err := os.ReadDir(oldDir)
+	if err != nil {
+		log.Println("Delete old file error:", err)
+	} else {
+		for _, entry := range entries {
+			if entry.Name() == utils.ConfigFileName ||
+				entry.Name() == utils.UserDataFileName ||
+				entry.Name() == utils.LogDataFileName {
+
+				// 删除文件错误只记录中log中
+				_ = utils.RemoveFile(utils.Join(oldDir, entry.Name()))
+			}
+		}
+	}
+
+	// 2.再保存文件
+	// 保存boot_config文件
 	if err = utils.StoreFile(filepath.Join(bootDir, utils.BootConfigFileName), data); err != nil {
 		log.Printf(err.Error())
 		return err
 	}
 
-	// TODO: 将用户当前的文件移动到修改后的目录下
 	return nil
 }
 

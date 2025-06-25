@@ -16,12 +16,12 @@ var (
 )
 
 type UData struct {
-	Model        string `json:"model" mapstructure:"model"`
-	BaseURL      string `json:"base_url" mapstructure:"base_url"`
-	ApiKey       string `json:"api_key" mapstructure:"api_key"`
-	IsOpenAI     bool   `json:"is_open_ai" mapstructure:"is_open_ai"`
-	dataFilePath string
-	uLock        sync.Locker
+	Model    string `json:"model" mapstructure:"model"`
+	BaseURL  string `json:"base_url" mapstructure:"base_url"`
+	ApiKey   string `json:"api_key" mapstructure:"api_key"`
+	IsOpenAI bool   `json:"is_open_ai" mapstructure:"is_open_ai"`
+	//dataFilePath string
+	uLock sync.Locker
 }
 
 func GetUserData() (*UData, error) {
@@ -34,20 +34,16 @@ func GetUserData() (*UData, error) {
 	)
 	// 应用启动只读取一次文件
 	userDataOnce.Do(func() {
-		_, appConf, _ = EnsureConfigInitialized()
-		dataDir := appConf.CustomDataDir
+		bootConf, _, _ = EnsureConfigInitialized()
+		dataDir := bootConf.CustomConfigDir
 		dataFilePath = utils.Join(dataDir, utils.UserDataFileName)
 		defaultUserData = &UData{
-			dataFilePath: dataFilePath,
-			uLock:        &sync.RWMutex{},
+			//dataFilePath: dataFilePath,
+			uLock: &sync.RWMutex{},
 		}
 
-		// 1.判断是否存在数据文件
-		if exist, err = utils.IsPathExist(dataFilePath); err != nil {
-			return
-		}
-		// 2.不存在则创建
-		if !exist {
+		// 1.判断是否存在数据文件, 不存在则创建
+		if exist, _ = utils.IsPathExist(dataFilePath); !exist {
 			data, _ = json.MarshalIndent(defaultUserData, "", " ")
 			if err = utils.EnsureDirExists(dataDir, 0755); err != nil {
 				log.Println(err)
@@ -61,7 +57,7 @@ func GetUserData() (*UData, error) {
 			return
 		}
 
-		// 3.存在则直接解析
+		// 2.存在则直接解析
 		userData = defaultUserData
 		if err = parseUserData(dataDir, userData); err != nil {
 			return
@@ -93,9 +89,6 @@ func parseUserData(dirPath string, userData *UData) error {
 func (u *UData) SetUserData(newUserData *UData) error {
 	u.uLock.Lock()
 	defer u.uLock.Unlock()
-
-	// 确保userData对象不为nil
-	GetUserData()
 
 	curDataVal := reflect.ValueOf(u).Elem()
 	newDataVal := reflect.ValueOf(newUserData).Elem()
@@ -136,7 +129,7 @@ func (u *UData) StoreUserData() error {
 		return fmt.Errorf("data is null")
 	}
 	// 保存文件
-	if err = utils.StoreFile(u.dataFilePath, data); err != nil {
+	if err = utils.StoreFile(utils.Join(bootConf.CustomConfigDir, utils.UserDataFileName), data); err != nil {
 		return err
 	}
 	return nil
