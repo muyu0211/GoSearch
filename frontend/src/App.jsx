@@ -3,7 +3,7 @@ import SearchBar from './components/SearchBar';
 import SettingsPage from './page/Settings.jsx';
 import Explorer from './page/Explorer.jsx';
 import i18n from './assets/config/i18n.js';
-import GoSearch_logo from './assets/images/GoSearch.svg';
+import GoSearch_logo from './assets/icon/GoSearch.svg';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
@@ -144,11 +144,11 @@ function AppContent() {
 
 function App() {
     return (
-        <NavigationProvider>
-            <I18nextProvider i18n={i18n}>
-                <AppContent />
-            </I18nextProvider>
-        </NavigationProvider>
+            <NavigationProvider>
+                <I18nextProvider i18n={i18n}>
+                    <AppContent />
+                </I18nextProvider>
+            </NavigationProvider>
     );
 }
 

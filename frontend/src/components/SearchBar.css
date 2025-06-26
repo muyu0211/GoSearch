@@ -1,4 +1,3 @@
-/* frontend/src/components/SearchBar.css */
 .search-bar-container {
     display: flex;
     width: 100%;
@@ -10,13 +9,26 @@
     position: relative;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--header-bg-color);    /* 使用你的变量 */
-    color: var(--header-text-color);          /* 使用你的变量 */
-    box-shadow: var(--header-box-shadow);       /* 使用你的变量 */
-    /* border-bottom: 1px solid var(--border-primary);  如果你有 --border-primary */
+    padding: 0.1rem 1rem;
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    box-shadow: var(--header-box-shadow);
     z-index: 10;
     transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+}
+
+.settings-action-area {
+    display: flex;
+    align-items: center;      /* 垂直居中其子项 (img) */
+    justify-content: center;  /* 水平居中其子项 (img) */
+}
+
+.draggable-area {
+    --wails-draggable: drag; /* 使此区域可拖动 */
+}
+.non-draggable {
+    --wails-draggable: no-drag; /* 使此区域不可拖动 */
 }
 
 .header-logo {
@@ -32,146 +44,53 @@
 }
 
 .app-title {
-    font-size: 1.5em;
+    font-size: 1.3em;
     font-weight: bold;
     /* color 已从 .app-header 继承，或直接使用 var(--header-text-color) */
     margin-left: 0.5rem; /* 在 logo 和 title 之间加点间距 */
 }
 
-.search-area {
-    flex-grow: 1;
-    margin: 0 1.5rem;
-    max-width: 700px;
-}
-/* 通用头部操作按钮样式 */
-.header-action-btn {
+.header-btn{
+    height: 38px;
+    width: 38px;
     background: none;
     border: none;
-    font-size: 1.5rem;
     color: var(--header-text-color, var(--app-text-color));
     cursor: pointer;
-    padding: 0.5rem;
-    margin-left: 0.25rem; /* 按钮之间的间距 */
-    border-radius: 50%;
+    margin: 0 0.15rem;
+    border-radius: var(--border-radius-middle);
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-    line-height: 1;
-}
-.header-action-btn:hover {
-    background-color: var(--bg-tertiary, #e0e0e0);
-}
-.header-action-btn:first-child {
-    margin-left: 0; /* 第一个按钮不需要左边距 */
-}
-
-.search-input-wrapper {
-    position: relative;
-    flex-grow: 1;
-    display: flex;
-}
-
-.search-input-field {
-    width: 100%;
-    padding: 0.75rem 2.5rem 0.75rem 1rem; /* 右边留出清除按钮空间 */
-    font-size: 1rem;
-    background-color: var(--input-bg-color);      /* 使用你的变量 */
-    color: var(--input-text-color, var(--app-text-color)); /* 使用你的变量, --input-text-color 优先，否则用 app-text-color */
-    border: 1px solid var(--input-border-color); /* 使用你的变量 */
-    border-radius: var(--border-radius-large) 0 0 var(--border-radius-large);
-    box-sizing: border-box;
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, color 0.3s ease;
-}
-
-.search-input-field:focus {
-    outline: none;
-    border-color: var(--input-focus-border-color); /* 使用你的变量 */
-    /*box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); !* 暂时保留这个，或者也用变量 *!*/
-}
-
-.clear-input-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-secondary, #888); /* 使用你的变量或通用次要文本颜色 */
-    cursor: pointer;
-    padding: 0.25rem;
-    line-height: 1;
-    transition: color 0.2s ease-in-out;
-}
-
-.clear-input-btn:hover {
-    color: var(--app-text-color); /* 使用你的变量 */
-}
-
-.search-submit-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    background-color: var(--button-bg-color);    /* 使用你的变量 */
-    color: var(--button-text-color);       /* 使用你的变量 */
-    border: 1px solid var(--button-bg-color);  /* 使用你的变量 */
-    border-radius: 0 var(--border-radius-large) var(--border-radius-large) 0;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 100px; /* 可以根据需要调整 */
 }
 
-.search-submit-btn:hover:not(:disabled) {
-    background-color: var(--button-hover-bg-color); /* 使用你的变量 */
-    border-color: var(--button-hover-bg-color);   /* 使用你的变量 */
+.header-btn:hover{
+    background-color: var(--bg-tertiary, #e0e0e0);
 }
 
-.search-submit-btn:disabled {
-    background-color: var(--bg-disabled, #c0c0c0); /* 使用你的变量或通用禁用背景 */
-    border-color: var(--bg-disabled, #c0c0c0);   /* 使用你的变量或通用禁用背景 */
-    color: var(--text-disabled, #888888);        /* 使用你的变量或通用禁用文字 */
-    cursor: not-allowed;
+.header-btn.close-btn:hover {
+    background-color: #f88286;
+    color: white;
 }
 
-.settings-action-area {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    position: relative;
+.system-monitor-toggle-btn img,
+.theme-toggle-btn img,
+.setting-btn img
+{
+    height: 20px;
+    width: 20px;
 }
-
-.theme-toggle-btn,
-.system-monitor-toggle-btn,
-.settings-btn{ /* 新增的主题切换按钮样式 */
-    background: none;
-    border: none;
-    font-size: 1.5rem; /* 图标大小 */
-    color: var(--header-text-color, var(--app-text-color)); /* 继承头部文字颜色 */
-    cursor: pointer;
-    padding: 0.5rem;
-    margin-right: 0.5rem; /* 和设置按钮的间距 */
-    border-radius: 50%;
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-.theme-toggle-btn:hover,
-.system-monitor-toggle-btn:hover,
-.settings-btn:hover{
-    background-color: var(--bg-tertiary, #e0e0e0); /* 使用一个通用的悬停背景色变量 */
-}
-/* Spinner 样式可以保持不变，因为它使用的是内联的 rgba 和 #fff，
-   或者你也可以为 spinner 定义专门的变量，如 --spinner-track-color 和 --spinner-color */
-.spinner {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    border: 2px solid rgba(255, 255, 255, 0.3); /* 如果按钮文字是白色，这个透明度可以 */
-    border-radius: 50%;
-    border-top-color: #fff; /* 同上 */
-    animation: spin 1s ease-in-out infinite;
-    -webkit-animation: spin 1s ease-in-out infinite;
-}
-
+/*.spinner {*/
+/*    display: inline-block;*/
+/*    !*width: 1em;*!*/
+/*    !*height: 1em;*!*/
+/*    border: 2px solid rgba(255, 255, 255, 0.3); !* 如果按钮文字是白色，这个透明度可以 *!*/
+/*    border-radius: 50%;*/
+/*    border-top-color: #fff; !* 同上 *!*/
+/*    animation: spin 1s ease-in-out infinite;*/
+/*    -webkit-animation: spin 1s ease-in-out infinite;*/
+/*}*/
 
 @keyframes spin {
     to { -webkit-transform: rotate(360deg); }

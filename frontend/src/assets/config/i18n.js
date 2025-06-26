@@ -25,7 +25,7 @@ const resources = {
             "Back to Home": "Back to Home",
             "Loading": "Loading...",
             "Loading settings...": "Loading settings...",
-            "Search files placeholder": "Search files (e.g., 'report.docx' or 'images from last week > 1MB')",
+            "Search files placeholder": "Search files (e.g., 'report.docx' or 'icon from last week > 1MB')",
             "To get started, please add some directories to index in the settings.": "To get started, please add some directories to index in the settings.",
             "Go to Settings": "Go to Settings",
             "Type in the search bar above to find your files.": "Type in the search bar above to find your files.",

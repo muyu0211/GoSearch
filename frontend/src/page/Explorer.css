@@ -1,11 +1,14 @@
 /* frontend/src/components/Explorer.css */
 .disk-explorer-container {
+    flex-grow: 1; /* 让它填充 file-explorer-container 中 Toolbar 下方的剩余空间 */
+    overflow-y: auto; /* 当内容超出其高度时，显示垂直滚动条 */
     /*width: 100%;*/
     padding: 1rem;
     /* background-color: var(--results-bg-color); */ /* 可以和 initial-view 背景一致或略有不同 */
     border-radius: 8px;
     /* box-shadow: var(--header-box-shadow); */
     animation: fadeInDiskExplorer 0.5s ease-out;
+    flex-direction: column;
 }
 
 @keyframes fadeInDiskExplorer {
