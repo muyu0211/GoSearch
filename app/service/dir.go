@@ -139,6 +139,11 @@ func (dirCnt *DirContent) DeleteItem(path string) error {
 	return nil
 }
 
+// TODO: 获取文件夹大的大小
+func (dirCnt *DirContent) GetDirSize(path string) int64 {
+	return 0
+}
+
 func (dirCnt *DirContent) getSize() uint64 {
 	var (
 		size     uint64

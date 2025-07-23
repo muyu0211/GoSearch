@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
-import './SearchBar.css';
+import './AppHeader.css';
 import GoSearch_logo from "../assets/icon/GoSearch.svg";
 import {useTranslation} from "react-i18next";
-import SystemMonitor from "./SystemMonitor.jsx"; // 为 SearchBar 创建一个 CSS 文件
+import SystemMonitor from "./SystemMonitor.jsx"; // 为 AppHeader 创建一个 CSS 文件
 import { useNavigation } from '../context/NavigationContext'; // 导入 useNavigation
 import {WindowMinimise, WindowToggleMaximise, Quit, WindowIsMaximised} from '../../wailsjs/runtime/runtime';
 
@@ -17,7 +17,7 @@ import iconMaximiseUrl from '../assets/icon/Maximise.svg';
 import iconNormaliseUrl from '../assets/icon/Normalise.svg';
 import iconCloseUrl from '../assets/icon/Close.svg';
 
-function SearchBar({ currentTheme, onChangeTheme }) {
+function AppHeader({ currentTheme, onChangeTheme }) {
     useRef(null);
     const { t, i18n } = useTranslation();
     const { currentPage, navigateTo } = useNavigation();
@@ -28,6 +28,7 @@ function SearchBar({ currentTheme, onChangeTheme }) {
     // 应用主题
     useEffect(() => {
         document.body.className = '';
+        document.body.classList.add(`theme-${currentTheme}`);
         document.body.classList.add(`theme-${currentTheme}`);
         localStorage.setItem('appTheme', currentTheme);
     }, [currentTheme]);
@@ -142,4 +143,4 @@ function SearchBar({ currentTheme, onChangeTheme }) {
     );
 }
 
-export default SearchBar;
+export default AppHeader;

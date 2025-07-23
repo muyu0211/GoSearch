@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import SearchBar from './components/SearchBar';
+import React, { useState, useEffect } from 'react';
+import AppHeader from './components/AppHeader.jsx';
 import SettingsPage from './page/Settings.jsx';
 import Explorer from './page/Explorer.jsx';
 import i18n from './assets/config/i18n.js';
@@ -11,7 +11,6 @@ import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { ToastContainer, toast } from 'react-toastify';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { GetAppConfig, SetAppConfig, GetUserData } from '../wailsjs/go/controller/API';
-import { GetDiskInfo } from '../wailsjs/go/controller/DirController';
 
 function AppContent() {
     const { t, i18n } = useTranslation(); // 获取翻译函数
@@ -22,18 +21,18 @@ function AppContent() {
     const [theme, setTheme] = useState(() => localStorage.getItem('appTheme') || 'light');
 
     // 从后端获取数据
-    const fetchInitialData = useCallback(async () => {
-        try {
-            const [userData] = await Promise.all([
-                // GetDiskInfo(),
-                GetUserData(),
-            ]);
-        } catch (error) {
-            toast.error(t("Error fetching app status/dirs:", error));
-        } finally {
-            setIsLoading(false);
-        }
-    }, [t]);
+    // const fetchInitialData = useCallback(async () => {
+    //     try {
+    //         // await GetUserData();
+    //         const [userData] = await Promise.all([
+    //             GetUserData(),
+    //         ]);
+    //     } catch (error) {
+    //         toast.error(t("Error fetching app status/dirs:", error));
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // }, [t]);
 
     // --- 应用启动时加载初始配置和用户数据 ---
     useEffect(() => {
@@ -51,12 +50,13 @@ function AppContent() {
                 }
             } catch (error) {
                 console.error("Error fetching app config on mount:", error);
+            } finally {
+                setIsLoading(false);
             }
-            // 获取其他初始数据
-            await fetchInitialData();
+
         };
         loadInitialConfig();
-    }, [fetchInitialData]);
+    }, []);
 
     // 更换主题
     const handleThemeChange = async (newTheme) => {
@@ -103,8 +103,6 @@ function AppContent() {
                         onChangeTheme={handleThemeChange}
                         initialAppConfig={initialAppConfig}
                         setInitialAppConfig={setInitialAppConfig}
-                        initialUserData={initialUserData}
-                        setInitialUserData={setInitialUserData}
                     />
                 );
                 break
@@ -118,7 +116,7 @@ function AppContent() {
 
     return (
         <div className={`app-container`}>
-            <SearchBar
+            <AppHeader
                 currentTheme={theme}
                 onChangeTheme={handleThemeChange}
                 isLoading={isLoading}
@@ -136,7 +134,7 @@ function AppContent() {
                 pauseOnFocusLoss
                 draggable
                 theme={theme}
-                style={{ marginTop: '-10px' }} // 调整以避开头部
+                style={{ marginTop: '-10px' }}
             />
         </div>
     );

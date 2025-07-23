@@ -50,7 +50,10 @@ function Explorer(callback, deps) {
     const [showPreview, setShowPreview] = useState(false);
     const [previewItem, setPreviewItem] = useState(null);
     const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
-    const hoverTimeoutRef = useRef(null);
+    const showPreviewTimeoutRef  = useRef(null);
+    const hidePreviewTimeoutRef = useRef(null); // 用于延迟隐藏预览的计时器
+    const SHOW_DELAY = 700; // 鼠标悬停 500ms 后显示预览
+    const HIDE_DELAY = 200; // 鼠标离开 200ms 后隐藏预览
 
     // 组件首次加载
     useEffect(() => {
@@ -69,7 +72,7 @@ function Explorer(callback, deps) {
         // TODO: 更新预览面板等
     }, []);
 
-    const handleItemDoubleClick = useCallback(async (item) => {
+    const handleItemDoubleClick = useCallback(async (item) =>   {
         if (item.is_dir && item.path && item.path !== currentPath) {
             await navigateToPath(item.path);
         } else if (!item.is_dir) {
@@ -95,30 +98,51 @@ function Explorer(callback, deps) {
     };
 
     const handleItemMouseEnter = useCallback((event, item) => {
-        if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
+        if (showPreviewTimeoutRef.current) {
+            clearTimeout(showPreviewTimeoutRef.current);
         }
         // 如果预览已经显示，并且是针对同一个项目，则不执行任何操作
         if (showPreview && previewItem && previewItem.path === item.path) {
             return;
         }
         // 设置一个短暂的延迟后显示预览，避免鼠标快速划过时频繁触发
-        hoverTimeoutRef.current = setTimeout(() => {
+        showPreviewTimeoutRef.current = setTimeout(() => {
             setPreviewItem(item);
             setPreviewPosition({ x: event.clientX, y: event.clientY });
             setShowPreview(true);
-        }, 700);
+        }, SHOW_DELAY);
 
     }, [showPreview, previewItem]);
 
     const handleItemMouseLeave = useCallback(() => {
         // 当鼠标离开列表项时，清除计时器，并隐藏预览
-        if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
-            hoverTimeoutRef.current = null;
+        if (showPreviewTimeoutRef .current) {
+            clearTimeout(showPreviewTimeoutRef .current);
+            showPreviewTimeoutRef .current = null;
         }
         // 鼠标移开立即隐藏
+        hidePreviewTimeoutRef.current = setTimeout(() => {
+            setShowPreview(false);
+            setPreviewItem(null);
+        }, HIDE_DELAY)
         setShowPreview(false);
+    }, []);
+
+    // 当鼠标进入预览窗口本身时
+    const handlePreviewMouseEnter = useCallback(() => {
+        if (hidePreviewTimeoutRef.current) {
+            clearTimeout(hidePreviewTimeoutRef.current);
+            hidePreviewTimeoutRef.current = null;
+        }
+    }, []);
+
+    // 当鼠标离开预览窗口时
+    const handlePreviewMouseLeave = useCallback(() => {
+        // 行为与离开列表项时相同：启动一个计时器来隐藏预览
+        hidePreviewTimeoutRef.current = setTimeout(() => {
+            setShowPreview(false);
+            setPreviewItem(null);
+        }, HIDE_DELAY);
     }, []);
 
     // ====================================== 渲染逻辑 ======================================
@@ -367,7 +391,8 @@ function Explorer(callback, deps) {
                 isOpen={showPreview}
                 item={previewItem}
                 position={previewPosition}
-                // onClose={() => setShowPreview(false)} // 通常悬停预览不需要内部关闭按钮
+                onMouseEnter={handlePreviewMouseEnter} // <--- 传递事件处理器
+                onMouseLeave={handlePreviewMouseLeave} // <--- 传递事件处理器
             />
         </div>
     );

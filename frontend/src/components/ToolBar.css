@@ -1,18 +1,18 @@
 .explorer-toolbar {
     display: flex;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border-primary, var(--input-border-color));
-    background-color: var(--header-bg-color); /* 工具栏背景可以和头部类似 */
-    flex-shrink: 0; /* 防止工具栏被压缩 */
+    align-items: flex-start; /* 改为 flex-start 以容纳多行筛选标签 */
+    padding: 0.3rem;
+    background-color: var(--header-bg-color);
+    gap: 0.5rem;
+    flex-wrap: wrap; /* 允许换行 */
+    border-bottom: 1px solid #dcdcdc;
 }
 
 .goUpBtn,
 .goToHomeBtn,
 .retrieveDesBtn,
 .refreshBtn,
-.llm-toggle-btn,
-.date-picker-btn {
+.llm-toggle-btn {
     height: 100%;
     background: none;
     color: var(--header-text-color, var(--app-text-color));
@@ -29,9 +29,8 @@
 .goToHomeBtn:hover:not(:disabled),
 .retrieveDesBtn:hover:not(:disabled),
 .refreshBtn:hover:not(:disabled),
-.date-picker-btn:hover:not(:disabled) {
+.llm-toggle-btn:hover:not(:disabled){
     background-color: var(--bg-tertiary, #e0e0e0);
-    /*border-color: var(--input-border-color);*/
 }
 .explorer-toolbar button:disabled {
     opacity: 0.5;
@@ -51,6 +50,7 @@
     box-sizing: border-box;
     font-size: 0.9em;
 }
+
 .path-input-container:focus-within {
     border-color: var(--input-focus-border-color);
     /*box-shadow: 0 0 0 1px var(--input-focus-border-color, rgba(0, 123, 255, 0.25));*/
@@ -78,111 +78,283 @@
     line-height: normal;
 }
 
-
 .llm-toggle-btn.active,
 .date-picker-btn.active {
-    background-color: var(--settings-accent-color); /* 激活时的背景色 */
-    color: var(--button-text-color, white); /* 激活时的文字/图标颜色 */
-    /*box-shadow: inset 0 0 5px rgba(0,0,0,0.2);   !*可选的内阴影效果*!*/
+    background-color: var(--settings-accent-color);
+    color: var(--button-text-color, white);
 }
 .llm-toggle-btn.active:hover,
 .date-picker-btn.active:hover {
-    background-color: var(--settings-accent-color); /* 激活时悬停颜色可以不变或略微变深 */
+    background-color: var(--settings-accent-color);
     opacity: 0.9;
 }
 
-/* 日期选择器相关样式 */
-.date-picker-container {
-    position: relative;
-}
-
-.date-picker-dropdown {
-    position: absolute;
-    right: 0;
-    top: calc(120% + 10px); /* 在按钮下方，留一点间隙 */
-    background-color: var(--header-bg-color);
-    border: 1px solid var(--input-border-color);
-    border-radius: var(--border-radius-large);
-    box-shadow: 0 4px 10px var(--shadow-primary, rgba(0, 0, 0, 0.1));
-    padding: 0.7rem;
-    z-index: 1000; /* 确保在最上层 */
-    min-width: 250px; /* 调整最小宽度以容纳日期输入框 */
-
-    /* 初始状态 (关闭/隐藏) */
-    opacity: 0;
-    transform: scaleY(0.95) translateY(-10px); /* 轻微向上移并缩小 */
-    transform-origin: top center; /* 动画基点在顶部中间 */
-    pointer-events: none; /* 关闭时不可交互 */
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-}
-
-.date-picker-dropdown.open {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    visibility: visible;
-    pointer-events: auto;
-    transition-delay: 0s;
-}
-
-.date-picker-header {
+.path-and-filters-container {
+    flex-grow: 1;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem; /* 增加与下方输入框的间距 */
-    padding-bottom: 0.5rem; /* 在标题下方加一点内边距 */
-    border-bottom: 1px solid var(--input-border-color);
-    font-size: 0.9em;
-    color: var(--input-text-color, var(--app-text-color));
+    flex-direction: column;
 }
 
-.clear-date-btn {
-    background: none;
+.path-input-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.path-input-field, .breadcrumb-container {
+    border-radius: var(--border-radius-middle) 0 0 var(--border-radius-middle) !important;
+}
+
+.active-filters-area {
+    padding: 0.2rem;
+}
+
+/* --- 可视化查询构建器 (VFB) 样式 --- */
+.add-filter-btn {
+    height: 100%;
+    background-color: var(--button-bg-color);
     border: none;
+    padding: 0 1rem;
     cursor: pointer;
-    font-size: 1.5em;
-    /* padding: 0.2rem; */
-    line-height: 1;
-    color: var(--text-secondary, #888); /* 使用次要文本颜色 */
+    font-size: 1.2em;
+    color: var(--button-text-color);
+    border-radius:  var(--border-radius-small);
+    transition: background-color 0.2s, color 0.2s;
 }
-.clear-date-btn:hover {
-    color: var(--app-text-color); /* 悬停时更明显 */
+.add-filter-btn:hover {
+    background-color: var(--button-hover-bg-color);
 }
 
+/* --- 可视化查询构建器 (VFB) 样式 --- */
+.query-builder-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    background-color: var(--results-bg-color, #fff);
+    border: 1px solid var(--border-primary, #e0e0e0);
+    border-radius: var(--border-radius-middle, 8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+    padding: 1rem;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem; /* 增加 section 之间的间距 */
+    /* 优雅的动画 */
+    transform-origin: top right;
+    animation: slideDownFadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideDownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.builder-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.builder-section label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-secondary, #555);
+    text-align: center; /* 关键改动：标签居中 */
+}
+
+.builder-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center; /* 垂直居中对齐 */
+}
+
+.builder-input,
+.builder-select {
+    background-color: var(--input-bg-color, #fff);
+    border: 1px solid var(--input-border-color, #ccc);
+    border-radius: var(--border-radius-small, 5px);
+    padding: 0.6rem;
+    color: var(--app-text-color, #333);
+    font-size: 0.95em;
+    height: 35px; /* 统一高度 */
+    box-sizing: border-box;
+}
+
+.builder-input {
+    flex-grow: 1;
+}
+
+/*.builder-select.size-operator {*/
+/*    flex-basis: 60px; !* 给操作符一个固定宽度 *!*/
+/*    flex-grow: 0;*/
+/*}*/
+.builder-input.size-value {
+    width: 140px;
+}
+/*.builder-select.size-unit {*/
+/*    flex-basis: 70px; !* 给单位一个固定宽度 *!*/
+/*    flex-grow: 0;*/
+/*}*/
+
+.builder-add-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 35px;
+    padding: 0;
+    background-color: var(--button-bg-color, #007bff); /* 匹配图片的蓝色 */
+    color: var(--button-text-color, #fff);
+    border: none;
+    border-radius: var(--border-radius-small, 5px);
+    cursor: pointer;
+    font-size: 1.6em;
+    font-weight: bold;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.builder-add-btn:hover {
+    background-color: var(--button-hover-bg-color, #0056b3);
+}
+
+.builder-separator {
+    height: 1px;
+    background-color: var(--border-primary, #e0e0e0);
+    margin: 0.2rem 0;
+}
+
+.builder-date-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem; /* 图标和文字的间距 */
+    background-color: var(--input-bg-color, #fff);
+    border: 1px solid var(--input-border-color, #ccc);
+    padding: 0.6rem;
+    height: 38px;
+    box-sizing: border-box;
+    border-radius: var(--border-radius-small, 5px);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    color: var(--text-secondary, #555);
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+.builder-date-btn:hover {
+    background-color: var(--bg-tertiary, #f0f0f0);
+    border-color: var(--input-focus-border-color, #007bff);
+    color: var(--text-primary, #333);
+}
+
+.builder-date-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 让箭头靠右 */
+    width: 100%;
+    gap: 0.6rem;
+    background-color: transparent;
+    border: 1px solid transparent; /* 默认无边框 */
+    padding: 0.6rem;
+    border-radius: var(--border-radius-small, 5px);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    color: var(--text-secondary, #555);
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+.builder-date-toggle-btn:hover {
+    background-color: var(--bg-tertiary, #f0f0f0);
+}
+
+/* 箭头图标 */
+.builder-date-toggle-btn .chevron {
+    font-size: 1.2em;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+/* 当展开时，箭头旋转 */
+.builder-date-toggle-btn.open .chevron {
+    transform: rotate(90deg);
+}
+
+/* 这是包含日期输入框的容器，用于动画 */
+.builder-date-section {
+    display: grid;
+    grid-template-rows: 0fr; /* 关键：初始时没有高度 */
+    transition: grid-template-rows 0.35s ease-in-out;
+}
+
+.builder-date-section.open {
+    grid-template-rows: 1fr; /* 关键：展开时占据其内容的高度 */
+}
+
+/* 内部内容容器，用于防止内容在动画期间被裁剪 */
+.builder-date-section > .date-inputs-container,
+.builder-date-section > .date-apply-btn {
+    overflow: hidden;
+}
+
+/* 日期输入框的容器 */
 .date-inputs-container {
     display: flex;
-    flex-direction: column; /* 保持列布局 */
-    gap: 0.5rem; /* 增加组之间的间距 */
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-top: 1rem; /* 与上方按钮的间距 */
 }
 
 .date-input-group {
-    display: flex;         /* 1. 设置为 flex 容器 */
-    align-items: center;   /* 2. 垂直居中对齐内部元素 (label 和 input) */
-    margin-bottom: 0.25rem; /* (可选) 与其他 filter group 的间距 */
-    gap: 0.3rem;           /* 3. (可选) 在 label 和 input 之间添加一些间距 */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .date-input-group label {
-     /*white-space: nowrap;   !*如果标签文本可能很长，你可能不希望它换行*!*/
-    margin-right: 0.2rem; /* 如果不用 gap，可以用 margin 来控制间距 */
-    font-size: 0.9em;     /* (可选) 调整标签字体大小 */
-    color: var(--text-secondary, #555); /* (可选) 使用主题变量 */
-    flex-shrink: 0;       /* 防止标签在空间不足时被压缩 */
-    width: 30px;
+    font-size: 0.9em;
+    text-align: right;
 }
 
 .date-input {
-    width: 100%; /* 让输入框填满其容器 */
-    box-sizing: border-box; /* 确保 padding 不会撑大 */
-    padding: 0.5rem; /* 增加内边距 */
-    border: 1px solid var(--input-border-color);
-    border-radius: var(--border-radius-small);
-    background-color: var(--input-bg-color);
-    color: var(--input-text-color, var(--app-text-color));
-    font-size: 1.1em;
+    flex-grow: 1;
+    background-color: var(--input-bg-color, #fff);
+    border: 1px solid var(--input-border-color, #ccc);
+    border-radius: var(--border-radius-small, 5px);
+    padding: 0.5rem;
+    color: var(--app-text-color, #333);
 }
 
-.date-input:focus { /* 添加聚焦样式 */
-    outline: none;
-    border-color: var(--input-focus-border-color);
-    /* box-shadow: 0 0 0 1px var(--input-focus-border-color); */
+/* 应用按钮 */
+.date-apply-btn {
+    width: 100%;
+    background-color: var(--button-bg-color, #007bff);
+    color: var(--button-text-color, #fff);
+    border: none;
+    padding: 0.6rem;
+    border-radius: var(--border-radius-small, 5px);
+    cursor: pointer;
+    margin-top: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.date-apply-btn:hover {
+    background-color: var(--button-hover-bg-color, #0056b3);
+}
+
+/* 移除旧的独立日期选择器样式 */
+.date-picker-dropdown.standalone {
+    display: none;
 }

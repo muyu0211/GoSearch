@@ -22,7 +22,6 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
     const [bootConfig, setBootConfig] = useState(null); // 存储从后端加载的 BootConfig
     const [userData, setUserData] = useState(null)
     const [isLoading, setIsLoading] = useState(true);
-    const [isUpdatingDirs, setIsUpdatingDirs] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState(() => localStorage.getItem('appLanguage') || i18n.language || 'en');
     const [showLanguageConfirm, setShowLanguageConfirm] = useState(false);
     const [targetLanguage, setTargetLanguage] = useState('');
@@ -265,14 +264,14 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
                     <button
                         onClick={() => promptChangeLanguage('en')} // 调用 prop
                         className={currentLanguage === 'en' ? 'active' : ''}
-                        disabled={isLoading || isUpdatingDirs}
+                        disabled={isLoading}
                     >
                         English
                     </button>
                     <button
                         onClick={() => promptChangeLanguage('zh-CN')} // 调用 prop
                         className={currentLanguage === 'zh-CN' ? 'active' : ''}
-                        disabled={isLoading || isUpdatingDirs}
+                        disabled={isLoading}
                     >
                         简体中文
                     </button>
@@ -285,14 +284,14 @@ function SettingsPage({ currentTheme, onChangeTheme, initialAppConfig, setInitia
                     <button
                         onClick={() => onChangeTheme('light')} // 调用 prop
                         className={currentTheme === 'light' ? 'active' : ''}
-                        disabled={isLoading || isUpdatingDirs}
+                        disabled={isLoading}
                     >
                         {t('Light')}
                     </button>
                     <button
                         onClick={() => onChangeTheme('dark')} // 调用 prop
                         className={currentTheme === 'dark' ? 'active' : ''}
-                        disabled={isLoading || isUpdatingDirs}
+                        disabled={isLoading}
                     >
                         {t('Dark')}
                     </button>

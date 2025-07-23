@@ -173,6 +173,15 @@ const resources = {
             "e.g., https://api.openai.com/v1": "e.g., https://api.openai.com/v1",
             "Saving...": "Saving...",
             "Save LLM Settings": "Save LLM Settings",
+
+            "Add search filter": "Add search filter",
+            "File Type": "File Type",
+            "File Size": "File Size",
+            "Filter by date": "Filter by date",
+            "filter.remove": "filter.remove",
+            "filter.type": "filter.type",
+            "filter.size": "filter.size",
+            "Apply Date Filter": "Apply Date Filter",
         }
     },
     zh: { // 中文翻译
@@ -332,6 +341,14 @@ const resources = {
             "e.g., https://api.openai.com/v1": "例如, https://api.openai.com/v1",
             "Saving...": "保存中...",
             "Save LLM Settings": "保存模型配置",
+
+            "Add search filter": "添加过滤条件",
+            "filter.remove": "移除过滤",
+            "filter.type": "类型过滤",
+            "filter.size": "大小过滤",
+            "File Type": "文件类型",
+            "File Size": "文件大小",
+            "Filter by date": "日期过滤",
         }
     }
 };

@@ -6,7 +6,7 @@ import './PreviewModel.css';
 
 const MAX_TEXT_PREVIEW_LENGTH = 200; // 文本预览最大字符数
 
-function PreviewModal({ isOpen, item, position, onClose }) {
+function PreviewModal({ isOpen, item, position,  onMouseEnter, onMouseLeave }) {
     const { t } = useTranslation();
     const [previewContent, setPreviewContent] = useState(null);
     const [previewType, setPreviewType] = useState('none');
@@ -78,7 +78,12 @@ function PreviewModal({ isOpen, item, position, onClose }) {
 
 
     return (
-        <div  ref={modalRef} className={`preview-modal-tooltip ${isActuallyOpen && isOpen ? 'visible' : ''}`} style={style}>
+        <div  ref={modalRef}
+              className={`preview-modal-tooltip ${isActuallyOpen && isOpen ? 'visible' : ''}`}
+              style={style}
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+        >
             {isLoading ? (
                 <p className="preview-loading-text">{t('Loading')}</p>
             ) : (

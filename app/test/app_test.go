@@ -298,3 +298,7 @@ func TestSetConfigDir(t *testing.T) {
 	api := controller.NewAPI()
 	api.SetBootConfig("E:\\Tools\\SetUp\\test-test")
 }
+
+func TestAbc(t *testing.T) {
+
+}
