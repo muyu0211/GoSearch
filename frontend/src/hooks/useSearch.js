@@ -27,6 +27,7 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         };
     }, []);
 
+    // 清除流
     const cleanupStream = useCallback(() => {
         if (searchStartTimeRef.current) {
             const endTime = performance.now();
@@ -36,7 +37,8 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         setIsLoadingSearch(false);
     }, []);
 
-    const executeSearchStream = useCallback(async (query, isLLMSearchMode, dateRange) => {
+    // TODO: 重构成使用filters
+    const executeSearchStream = useCallback(async (query, isLLMSearchMode, filters) => {
         if (stopCurrentStreamRef.current) {
             stopCurrentStreamRef.current();
         }
@@ -51,7 +53,7 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         setSearchQuery(query);
         setSearchResults([]);
         setSearchDuration(null);
-        setSearchDateRange(dateRange || { startDate: null, endDate: null });
+        // setSearchDateRange(dateRange || { startDate: null, endDate: null });
         searchStartTimeRef.current = performance.now();
 
         let cnt = 0
@@ -62,10 +64,15 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
             modified_after: "",
             modified_before: "",
         };
-        if (dateRange) {
-            if (dateRange.startDate) searchParams.modified_after = new Date(Date.UTC(new Date(dateRange.startDate).getFullYear(),new Date(dateRange.startDate).getMonth(),new Date(dateRange.startDate).getDate(),0,0,0)).toISOString();
-            if (dateRange.endDate) searchParams.modified_before = new Date(Date.UTC(new Date(dateRange.endDate).getFullYear(),new Date(dateRange.endDate).getMonth(),new Date(dateRange.endDate).getDate(),23,59,59)).toISOString();
+        // 如果存在过滤器
+        if (filters.length > 0) {
+
         }
+
+        // if (dateRange) {
+        //     if (dateRange.startDate) searchParams.modified_after = new Date(Date.UTC(new Date(dateRange.startDate).getFullYear(),new Date(dateRange.startDate).getMonth(),new Date(dateRange.startDate).getDate(),0,0,0)).toISOString();
+        //     if (dateRange.endDate) searchParams.modified_before = new Date(Date.UTC(new Date(dateRange.endDate).getFullYear(),new Date(dateRange.endDate).getMonth(),new Date(dateRange.endDate).getDate(),23,59,59)).toISOString();
+        // }
 
         const eventHandler = (item) => {
             if (item === null || item === undefined) {
@@ -115,48 +122,48 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         }
     }, [t, i18n, cleanupStream, currentPath, setViewModeExternal, setIsLoadingSearch, setSearchQuery, setSearchResults, setSearchDuration, setSearchDateRange]);
 
-    const executeSearchNoStream = async (query, isLLMSearchMode, dateRange) => {
-        setIsLoadingSearch(true);
-        setViewModeExternal('search_results');
-        setSearchQuery(query);
-        setSearchResults([]);
-        setSearchDuration(null);
-        setSearchDateRange(dateRange || { startDate: null, endDate: null });
-        searchStartTimeRef.current = performance.now();
-
-        const searchParams = {
-            query,
-            current_path: currentPath, // 使用导航的当前路径作为搜索基础
-            modified_after: "",
-            modified_before: "",
-        };
-        if (dateRange) {
-            if (dateRange.startDate) searchParams.modified_after = new Date(Date.UTC(new Date(dateRange.startDate).getFullYear(),new Date(dateRange.startDate).getMonth(),new Date(dateRange.startDate).getDate(),0,0,0)).toISOString();
-            if (dateRange.endDate) searchParams.modified_before = new Date(Date.UTC(new Date(dateRange.endDate).getFullYear(),new Date(dateRange.endDate).getMonth(),new Date(dateRange.endDate).getDate(),23,59,59)).toISOString();
-        }
-
-        try {
-            let response;
-            if (isLLMSearchMode) {
-                // response = await SearchItemFromLLM(searchParams);
-                toast.warn("LLM Search not implemented for non-stream");
-                setIsLoadingSearch(false); return;
-            } else {
-                response = await SearchItemFromInput(searchParams);
-            }
-            setSearchResults(response.items || []);
-            if (searchStartTimeRef.current) {
-                const endTime = performance.now();
-                setSearchDuration((endTime - searchStartTimeRef.current) / 1000);
-                searchStartTimeRef.current = null;
-            }
-        } catch (error) {}
-        finally { setIsLoadingSearch(false); }
-    };
+    // const executeSearchNoStream = async (query, isLLMSearchMode, dateRange) => {
+    //     setIsLoadingSearch(true);
+    //     setViewModeExternal('search_results');
+    //     setSearchQuery(query);
+    //     setSearchResults([]);
+    //     setSearchDuration(null);
+    //     setSearchDateRange(dateRange || { startDate: null, endDate: null });
+    //     searchStartTimeRef.current = performance.now();
+    //
+    //     const searchParams = {
+    //         query,
+    //         current_path: currentPath, // 使用导航的当前路径作为搜索基础
+    //         modified_after: "",
+    //         modified_before: "",
+    //     };
+    //     if (dateRange) {
+    //         if (dateRange.startDate) searchParams.modified_after = new Date(Date.UTC(new Date(dateRange.startDate).getFullYear(),new Date(dateRange.startDate).getMonth(),new Date(dateRange.startDate).getDate(),0,0,0)).toISOString();
+    //         if (dateRange.endDate) searchParams.modified_before = new Date(Date.UTC(new Date(dateRange.endDate).getFullYear(),new Date(dateRange.endDate).getMonth(),new Date(dateRange.endDate).getDate(),23,59,59)).toISOString();
+    //     }
+    //
+    //     try {
+    //         let response;
+    //         if (isLLMSearchMode) {
+    //             // response = await SearchItemFromLLM(searchParams);
+    //             toast.warn("LLM Search not implemented for non-stream");
+    //             setIsLoadingSearch(false); return;
+    //         } else {
+    //             response = await SearchItemFromInput(searchParams);
+    //         }
+    //         setSearchResults(response.items || []);
+    //         if (searchStartTimeRef.current) {
+    //             const endTime = performance.now();
+    //             setSearchDuration((endTime - searchStartTimeRef.current) / 1000);
+    //             searchStartTimeRef.current = null;
+    //         }
+    //     } catch (error) {}
+    //     finally { setIsLoadingSearch(false); }
+    // };
 
     // 返回一个统一的搜索触发函数
-    const triggerSearch = useCallback((searchQuery, isLLMSearch = false, dateRangeFilter = null) => {
-        executeSearchStream(searchQuery, isLLMSearch, dateRangeFilter);
+    const triggerSearch = useCallback((searchQuery, isLLMSearch = false, filters = []) => {
+        executeSearchStream(searchQuery, isLLMSearch, filters);
     }, [executeSearchStream]);
 
     return {

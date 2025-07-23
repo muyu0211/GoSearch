@@ -22,7 +22,10 @@ type DirController struct {
 
 type SearchParams struct {
 	Query          string `json:"query"`
-	CurrentPath    string `json:"current_path"` // 当前搜索的目录
+	CurrentPath    string `json:"current_path"`
+	FileType       []string
+	MinSize        uint64
+	MaxSize        uint64
 	ModifiedAfter  string `json:"modified_after"`
 	ModifiedBefore string `json:"modified_before"`
 }
@@ -203,6 +206,7 @@ func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) 
 		return fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
 
+	// TODO: 无需后端解析参数
 	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
 		return err
 	}

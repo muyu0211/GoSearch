@@ -182,12 +182,12 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
     };
 
     const handleSubmitLogic = async (query) => {
-        const fullQuery = buildSearchQuery(query);
+        // const fullQuery = buildSearchQuery(query);
         // 如果只有筛选条件而没有主搜索词，且不在编辑模式，直接触发搜索
-        if (!query && fullQuery) {
-            await onSearchFile(fullQuery, isLLMSearch);
-            return;
-        }
+        // if (!query && fullQuery) {
+        //     await onSearchFile(fullQuery, isLLMSearch);
+        //     return;
+        // }
 
         // 1. 空查询导航到根
         if (query === "") {
@@ -219,8 +219,8 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
                 return;
             }
         }
-        // 5. 否则，视为在当前目录下进行搜索
-        await onSearchFile(fullQuery, isLLMSearch, { startDate, endDate });
+        // 5. 否则，视为在当前目录下进行搜索(传入输入框的输入条件、是否大模型搜索、搜索过滤条件)
+        await onSearchFile(query, isLLMSearch, filters);
     };
 
     // 添加过滤器
@@ -329,15 +329,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
         }
     };
 
-    // const toggleLLMSearchMode = () => {
-    //     setIsLLMSearch(prev => !prev);
-    //     // if (pathInputRef.current && !isEditingPath) {       // 如果不在编辑模式，切换后可以自动进入编辑并聚焦
-    //     //     switchToEditMode();
-    //     // } else if (pathInputRef.current && isEditingPath) {
-    //     //     pathInputRef.current.focus();                   // 如果已在编辑模式，确保焦点仍在输入框
-    //     // }
-    // };
-
     // 查看检索说明
     // const handleCheckRetrieveDes = async () => {
     //     try {
@@ -345,47 +336,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
     //     } catch (error) {
     //         toast.error(String(error));
     //     }
-    // };
-
-    // // 日期筛选逻辑
-    // const handleDateChange = () => {
-    //     if (!startDate && !endDate) return;
-    //     // 移除旧的日期筛选器
-    //     const otherFilters = filters.filter(f => f.type !== 'date');
-    //     const newDateFilter = { id: Date.now(), type: 'date', startDate, endDate };
-    //     setFilters([...otherFilters, newDateFilter]);
-    //     setShowDatePicker(false);
-    // };
-    //
-    // const clearDateFilter = () => {
-    //     setStartDate(null);
-    //     setEndDate(null);
-    //     setFilters(prev => prev.filter(f => f.type !== 'date'));
-    //     setShowDatePicker(false);
-    // };
-    // const toggleDatePicker = () => {
-    //     setShowDatePicker(prev => !prev);
-    // };
-    //
-    // const handleStartDateChange = (event) => {
-    //     const date = event.target.value ? new Date(event.target.value) : null;
-    //     setStartDate(date);
-    // };
-    //
-    // const handleEndDateChange = (event) => {
-    //     const date = event.target.value ? new Date(event.target.value) : null;
-    //     setEndDate(date);
-    // };
-    //
-    // const clearDatesAndSearch = () => {
-    //     setStartDate(null);
-    //     setEndDate(null);
-    //     if (editablePath.trim() && !isAbsolutePath(editablePath.trim())) {
-    //         onSearchFile(editablePath.trim(), isLLMSearch, { startDate: null, endDate: null });
-    //     } else {
-    //         onPathSubmit(currentPath);
-    //     }
-    //     setShowDatePicker(false);
     // };
 
     return (

@@ -346,23 +346,23 @@ function Explorer(callback, deps) {
                 {viewMode === 'search_results' && (
                     <>
                         <div className="search-results-header">
-                            <h3>
-                                {t('Search Results for "{{query}}" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}
-                                {(searchDateRange.startDate || searchDateRange.endDate) && (
-                                    <span className="date-filter-info">
-                                        {searchDateRange.startDate && searchDateRange.endDate ? (
-                                            t('(filtered by date: from {{startDate}} to {{endDate}})', {
-                                                startDate: searchDateRange.startDate.toLocaleDateString(),
-                                                endDate: searchDateRange.endDate.toLocaleDateString()
-                                            })
-                                        ) : searchDateRange.startDate ? (
-                                            t('(filtered by date: after {{date}})', { date: searchDateRange.startDate.toLocaleDateString() })
-                                        ) : (
-                                            t('(filtered by date: before {{date}})', { date: searchDateRange.endDate.toLocaleDateString() })
-                                        )}
-                                    </span>
-                                )}
-                            </h3>
+                            {/*<h3>*/}
+                            {/*    {t('Search Results for "{{query}}" in {{path}} ', { query: searchQuery, path: currentPath || t('All Indexed Locations') })}*/}
+                            {/*    {(searchDateRange.startDate || searchDateRange.endDate) && (*/}
+                            {/*        <span className="date-filter-info">*/}
+                            {/*            {searchDateRange.startDate && searchDateRange.endDate ? (*/}
+                            {/*                t('(filtered by date: from {{startDate}} to {{endDate}})', {*/}
+                            {/*                    startDate: searchDateRange.startDate.toLocaleDateString(),*/}
+                            {/*                    endDate: searchDateRange.endDate.toLocaleDateString()*/}
+                            {/*                })*/}
+                            {/*            ) : searchDateRange.startDate ? (*/}
+                            {/*                t('(filtered by date: after {{date}})', { date: searchDateRange.startDate.toLocaleDateString() })*/}
+                            {/*            ) : (*/}
+                            {/*                t('(filtered by date: before {{date}})', { date: searchDateRange.endDate.toLocaleDateString() })*/}
+                            {/*            )}*/}
+                            {/*        </span>*/}
+                            {/*    )}*/}
+                            {/*</h3>*/}
                             {searchDuration !== null && !isLoading && (
                                 <span className="search-duration">
                                     ({t('Found {{count}} items in {{duration}}s.', {
