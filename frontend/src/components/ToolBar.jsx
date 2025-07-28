@@ -119,7 +119,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
     const [editablePath, setEditablePath] = useState('');
     const pathInputRef = useRef(null);
     const [isLLMSearch, setIsLLMSearch] = useState(false);
-
     // --- 用于可视化查询构建器 ---
     const [filters, setFilters] = useState([]);
     const [showQueryBuilder, setShowQueryBuilder] = useState(false);
@@ -131,13 +130,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
             setFilters([])
         }
     },[currentPath])
-
-    // 同步 editablePath 当 currentPath 改变或退出编辑模式时
-    // useEffect(() => {
-    //     if (!isEditingPath) {
-    //         setEditablePath(currentPath || '');
-    //     }
-    // }, [currentPath, isEditingPath]);
 
     // 聚焦并全选输入框当进入编辑模式
     useEffect(() => {
@@ -165,30 +157,7 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
         setIsEditingPath(true);
     };
 
-    // --- 将筛选条件转换为搜索字符串 ---
-    const buildSearchQuery = (mainTerm) => {
-        const filterParts = filters.map(f => {
-            switch (f.type) {
-                case 'file_type': return `type:${f.value}`;
-                case 'file_size': return `size:${f.operator}${f.value}${f.unit}`;
-                case 'file_date':
-                    const start = f.startDate ? `date:>=${new Date(f.startDate).toISOString().split('T')[0]}` : '';
-                    const end = f.endDate ? `date:<=${new Date(f.endDate).toISOString().split('T')[0]}` : '';
-                    return `${start} ${end}`.trim();
-                default: return '';
-            }
-        });
-        return [mainTerm, ...filterParts].join(' ').trim();
-    };
-
     const handleSubmitLogic = async (query) => {
-        // const fullQuery = buildSearchQuery(query);
-        // 如果只有筛选条件而没有主搜索词，且不在编辑模式，直接触发搜索
-        // if (!query && fullQuery) {
-        //     await onSearchFile(fullQuery, isLLMSearch);
-        //     return;
-        // }
-
         // 1. 空查询导航到根
         if (query === "") {
             await onPathSubmit("");
@@ -212,14 +181,15 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
             const lowerQuery = query.toLowerCase();
             const matchedChildDir = subDirs.find(dir => dir.is_dir && dir.name.toLowerCase() === lowerQuery);
             if (matchedChildDir) {
-                // 确保 matchedChildDir.path 是绝对路径
-                // 如果不是，需要构建: const fullPath = currentPath + (isWindows ? '\\' : '/') + matchedChildDir.name;
                 await onPathSubmit(matchedChildDir.path); // 假设 matchedChildDir.path 是绝对路径
                 // clearDatesAndSearch(); // 同上
                 return;
             }
         }
         // 5. 否则，视为在当前目录下进行搜索(传入输入框的输入条件、是否大模型搜索、搜索过滤条件)
+        if (query === currentPath) {
+            query = ""
+        }
         await onSearchFile(query, isLLMSearch, filters);
     };
 
@@ -278,26 +248,19 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
         setFilters(prev => prev.filter(f => f.id !== id));
     };
 
-    // // 提交按钮现在也需要考虑筛选器
-    // useEffect(() => {
-    //     // 当筛选器变化时，如果输入框为空，自动触发一次搜索
-    //     const term = editablePath.trim();
-    //     if (!term && filters.length > 0 && !isEditingPath) {
-    //         handleSubmitLogic('');
-    //     }
-    // }, [filters]);
-
     // 按下提交按钮进行搜索
     const handleEditablePathSubmit = async (event) => {
         event.preventDefault();
         const query = editablePath.trim();
-        setIsEditingPath(false);
+        // setIsEditingPath(false);
         await handleSubmitLogic(query);
     };
 
     // 失焦时不进行提交
     const handleEditablePathBlur = async () => {
-        setIsEditingPath(false);
+        if (editablePath === "" || editablePath === currentPath) {
+            setIsEditingPath(false);
+        }
     };
 
     const handleEditablePathKeyDown = (event) => {
@@ -329,29 +292,24 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
         }
     };
 
-    // 查看检索说明
-    // const handleCheckRetrieveDes = async () => {
-    //     try {
-    //         const message = await GetRetrieveDes(); // 调用并等待
-    //     } catch (error) {
-    //         toast.error(String(error));
-    //     }
-    // };
-
     return (
         <div>
             <div className="explorer-toolbar">
                 {/* ... 导航按钮 ... */}
                 <div className="navigation-buttons">
                     <button onClick={onGoBack} disabled={currentPath === "" && historyPath.length === 0} title={t('Go Up')} className={"goUpBtn"}>⬆️</button>
-                    <button onClick={() => onPathSubmit("")} title={t('Go to My Device')} className={"goToHomeBtn"}>🏠</button>
+                    <button onClick={() => {setIsEditingPath(false);onPathSubmit("")}} title={t('Go to My Device')} className={"goToHomeBtn"}>🏠</button>
                 </div>
 
                 <div className="path-and-filters-container">
                     <div className="path-input-container">
                         {isEditingPath ? (
                             <form onSubmit={handleEditablePathSubmit} className="path-edit-form">
-                                <input ref={pathInputRef} type="text" value={editablePath} onChange={(e) => setEditablePath(e.target.value)} onBlur={() => setIsEditingPath(false)} className="path-input-field" placeholder={currentPath || t('Type path or search term...')} />
+                                <input ref={pathInputRef} type="text" className="path-input-field" placeholder={currentPath || t('Type path or search term...')}
+                                       value={editablePath}
+                                       onChange={(e) => setEditablePath(e.target.value)}
+                                       onBlur={handleEditablePathBlur}
+                                />
                             </form>
                         ) : (
                             <BreadcrumbDisplay
@@ -366,7 +324,6 @@ function ToolBar({ currentPath, historyPath = [], subDirs = [], onPathSubmit, on
 
                 {/* ... 其他操作按钮 ... */}
                 <button onClick={() =>{setIsLLMSearch(p=>!p)}} title={isLLMSearch ? t('Switch to Standard Search') : t('Switch to LLM Search')} className={`llm-toggle-btn header-action-btn ${isLLMSearch ? 'active' : ''}`}>🧠</button>
-                {/*<button onClick={GetRetrieveDes} title={t('Retrieve Description')} className="retrieveDesBtn header-action-btn">📑</button>*/}
                 <button onClick={() => onRefresh()} title={t('Refresh')} className="refreshBtn header-action-btn">🔄</button>
             </div>
 

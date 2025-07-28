@@ -1,10 +1,10 @@
 package service
 
 import (
+	"GoSearch/app/dto"
 	"GoSearch/app/utils"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,11 +14,9 @@ import (
 
 type SearchParams struct {
 	BaseDir        string // 要搜索的基础目录
-	SearchTerm     string // 原始或处理后的搜索词 (用于文件名/内容匹配)
-	TargetName     string // 如果明确是搜特定名称
+	Query          string // 原始的搜索词 (用于文件名/内容匹配)
 	IsFile         bool   // 标记是否明确搜索文件
 	IsDir          bool   // 标记是否明确搜索目录
-	GlobPattern    string // 通配符模式
 	FileType       []string
 	MinSize        uint64
 	MaxSize        uint64
@@ -56,77 +54,75 @@ func SearchItemsInStream(searchParams *SearchParams) (<-chan *FileSystemEntry, e
 }
 
 // ParseParams 解析用户搜索参数
-func ParseParams(input, currDirPath string) (*SearchParams, error) {
-	if strings.HasSuffix(currDirPath, ":") {
-		currDirPath = utils.Join(currDirPath)
-	}
+func ParseParams(param *dto.SearchParams) (*SearchParams, error) {
 	searchParams := &SearchParams{
-		BaseDir:    currDirPath,
-		SearchTerm: strings.ToLower(input),
-		FileType:   make([]string, 0),
-		MinSize:    0,
-		MaxSize:    0,
+		Query:    param.Query,
+		FileType: param.FileType,
+		MinSize:  param.MinSize,
+		MaxSize:  param.MaxSize,
 	}
-	// 用户可进行的输入
-	// 1. type: [item类型]
-	// 2. size: [xxKB(kb) xxMB(mb)]
-	// 3. glob: 通配符模式
-	// 4. 不包含以上特判字符串时, 认为用户输入的为item名字
-
-	// 定义条件模式
-	patterns := []struct {
-		Name    string
-		Pattern *regexp.Regexp
-		Handler func(*SearchParams, []string) error
-	}{
-		{
-			Name:    "name",
-			Pattern: regexp.MustCompile(`name:\s*(\S+)`),
-			Handler: handleNameFilter,
-		},
-		{
-			Name:    "type",
-			Pattern: regexp.MustCompile(`type:\s*([a-zA-Z0-9._-]+(?:\s*[,\s]\s*[a-zA-Z0-9._-]+)*)`),
-			Handler: handleTypeFilter,
-		},
-		{
-			Name:    "size",
-			Pattern: regexp.MustCompile(`size:\s*((?:[<>=]+\s*\d+(?:\.\d+)?\s*(?:[BKMGT]?[Bb]?[Yy]?[Tt]?[Ee]?[Ss]?)?\s*)+)`),
-			Handler: handleSizeFilter,
-		},
-		{
-			Name:    "glob",
-			Pattern: regexp.MustCompile(`glob:\s*(\S+)`),
-			Handler: handleGlobFilter,
-		},
+	if strings.HasSuffix(param.CurrentPath, ":") {
+		searchParams.BaseDir = utils.Join(param.CurrentPath)
 	}
 
-	isPattern := false
-	for _, p := range patterns {
-		matches := p.Pattern.FindAllStringSubmatch(input, -1)
-		for _, match := range matches {
-			isPattern = true
-			if err := p.Handler(searchParams, match); err != nil {
-				log.Printf("Parse %s error", p.Name)
-				return nil, err
-			}
-			input = strings.Replace(input, match[0], "", 1)
+	// 解析时间字符串
+	if param.ModifiedAfter != "" {
+		if modifiedAfter, err := time.Parse(utils.TimeLayOut, param.ModifiedAfter); err == nil {
+			searchParams.ModifiedAfter = &modifiedAfter
 		}
 	}
-	// 如果没有关键字，则认为整个字符串为目标名称
-	if !isPattern {
-		searchParams.TargetName = input
+	if param.ModifiedBefore != "" {
+		if modifiedBefore, err := time.Parse(utils.TimeLayOut, param.ModifiedBefore); err == nil {
+			searchParams.ModifiedBefore = &modifiedBefore
+		}
 	}
 
-	return searchParams, nil
-}
+	// 定义条件模式
+	//patterns := []struct {
+	//	Name    string
+	//	Pattern *regexp.Regexp
+	//	Handler func(*SearchParams, []string) error
+	//}{
+	//	{
+	//		Name:    "name",
+	//		Pattern: regexp.MustCompile(`name:\s*(\S+)`),
+	//		Handler: handleNameFilter,
+	//	},
+	//	{
+	//		Name:    "type",
+	//		Pattern: regexp.MustCompile(`type:\s*([a-zA-Z0-9._-]+(?:\s*[,\s]\s*[a-zA-Z0-9._-]+)*)`),
+	//		Handler: handleTypeFilter,
+	//	},
+	//	{
+	//		Name:    "size",
+	//		Pattern: regexp.MustCompile(`size:\s*((?:[<>=]+\s*\d+(?:\.\d+)?\s*(?:[BKMGT]?[Bb]?[Yy]?[Tt]?[Ee]?[Ss]?)?\s*)+)`),
+	//		Handler: handleSizeFilter,
+	//	},
+	//	{
+	//		Name:    "glob",
+	//		Pattern: regexp.MustCompile(`glob:\s*(\S+)`),
+	//		Handler: handleGlobFilter,
+	//	},
+	//}
+	//
+	//isPattern := false
+	//for _, p := range patterns {
+	//	matches := p.Pattern.FindAllStringSubmatch(input, -1)
+	//	for _, match := range matches {
+	//		isPattern = true
+	//		if err := p.Handler(searchParams, match); err != nil {
+	//			log.Printf("Parse %s error", p.Name)
+	//			return nil, err
+	//		}
+	//		input = strings.Replace(input, match[0], "", 1)
+	//	}
+	//}
+	//// 如果没有关键字，则认为整个字符串为目标名称
+	//if !isPattern {
+	//	searchParams.TargetName = input
+	//}
 
-// 处理文件名称过滤
-func handleNameFilter(params *SearchParams, match []string) error {
-	// 提取匹配的文件名模式
-	namePattern := match[1]
-	params.TargetName = namePattern
-	return nil
+	return searchParams, nil
 }
 
 // 处理文件类型过滤
@@ -199,11 +195,5 @@ func handleSizeFilter(params *SearchParams, match []string) error {
 	if !(params.MinSize <= params.MaxSize) {
 		return errors.New("invalid Size")
 	}
-	return nil
-}
-
-// TODO: 处理通配符过滤
-func handleGlobFilter(params *SearchParams, match []string) error {
-	params.GlobPattern = match[1]
 	return nil
 }

@@ -37,7 +37,6 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         setIsLoadingSearch(false);
     }, []);
 
-    // TODO: 重构成使用filters
     const executeSearchStream = useCallback(async (query, isLLMSearchMode, filters) => {
         if (stopCurrentStreamRef.current) {
             stopCurrentStreamRef.current();
@@ -53,7 +52,6 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         setSearchQuery(query);
         setSearchResults([]);
         setSearchDuration(null);
-        // setSearchDateRange(dateRange || { startDate: null, endDate: null });
         searchStartTimeRef.current = performance.now();
 
         let cnt = 0
@@ -61,18 +59,53 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         const searchParams = {
             query,
             current_path: currentPath,
+            file_type: [],
+            min_size:0,
+            max_size:0,
             modified_after: "",
             modified_before: "",
         };
-        // 如果存在过滤器
+
         if (filters.length > 0) {
-
+            // 遍历filter
+            filters.forEach(filter => {
+                switch (filter.type) {
+                    case 'file_type':
+                        if (!searchParams.file_type) {
+                            searchParams.file_type = [];
+                        }
+                        searchParams.file_type.push(filter.value);
+                        break;
+                    case 'file_size':
+                        const sizeInBytes = filter.value * (filter.unit === 'KB' ? 1024 : filter.unit === 'MB' ? 1024 * 1024 : 1024 * 1024 * 1024);
+                        if (filter.operator === '>') {
+                            searchParams.min_size = sizeInBytes;
+                        } else if (filter.operator === '<') {
+                            searchParams.max_size = sizeInBytes;
+                        } else if (filter.operator === '=') {
+                            searchParams.min_size = sizeInBytes;
+                            searchParams.max_size = sizeInBytes;
+                        }
+                        break;
+                    case 'file_date':
+                        if (filter.startDate) {
+                            searchParams.modified_after = new Date(Date.UTC(
+                                new Date(filter.startDate).getFullYear(),
+                                new Date(filter.startDate).getMonth(),
+                                new Date(filter.startDate).getDate(),0,0,0)).toISOString();
+                        }
+                        if (filter.endDate) {
+                            searchParams.modified_before = new Date(Date.UTC(
+                                new Date(filter.endDate).getFullYear(),
+                                new Date(filter.endDate).getMonth(),
+                                new Date(filter.endDate).getDate(),23,59,59)).toISOString();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
-
-        // if (dateRange) {
-        //     if (dateRange.startDate) searchParams.modified_after = new Date(Date.UTC(new Date(dateRange.startDate).getFullYear(),new Date(dateRange.startDate).getMonth(),new Date(dateRange.startDate).getDate(),0,0,0)).toISOString();
-        //     if (dateRange.endDate) searchParams.modified_before = new Date(Date.UTC(new Date(dateRange.endDate).getFullYear(),new Date(dateRange.endDate).getMonth(),new Date(dateRange.endDate).getDate(),23,59,59)).toISOString();
-        // }
 
         const eventHandler = (item) => {
             if (item === null || item === undefined) {
@@ -110,6 +143,7 @@ export function useSearch(currentPath, setViewModeExternal, setCurrentItems) {
         stopCurrentStreamRef.current = stopThisStream;
 
         try {
+            console.log("开始搜索:", searchParams);
             if (isLLMSearchMode) {
                 await SearchItemFromLLMInStream(searchParams);
             }else {

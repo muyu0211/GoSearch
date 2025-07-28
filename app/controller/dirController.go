@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"GoSearch/app/dto"
 	"GoSearch/app/service"
 	"GoSearch/app/utils"
 	"errors"
@@ -18,16 +19,6 @@ type DirController struct {
 	pathCache        *service.PathCache
 	isIndexing       bool
 	totalFileIndexed int
-}
-
-type SearchParams struct {
-	Query          string `json:"query"`
-	CurrentPath    string `json:"current_path"`
-	FileType       []string
-	MinSize        uint64
-	MaxSize        uint64
-	ModifiedAfter  string `json:"modified_after"`
-	ModifiedBefore string `json:"modified_before"`
 }
 
 type SearchResponse struct {
@@ -158,7 +149,7 @@ func (d *DirController) IndexFile(filePath string) (*service.FileSystemEntry, er
 	}, nil
 }
 
-func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*SearchResponse, error) {
+func (d *DirController) SearchItemFromInput(searchParams *dto.SearchParams) (*SearchResponse, error) {
 	var (
 		params *service.SearchParams
 		items  []*service.FileSystemEntry
@@ -169,7 +160,7 @@ func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*Search
 	}
 
 	start := time.Now()
-	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
+	if params, err = service.ParseParams(searchParams); err != nil {
 		return nil, err
 	}
 
@@ -196,7 +187,7 @@ func (d *DirController) SearchItemFromInput(searchParams *SearchParams) (*Search
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 
-func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) error {
+func (d *DirController) SearchItemFromInputInStream(searchParams *dto.SearchParams) error {
 	var (
 		stream <-chan *service.FileSystemEntry
 		params *service.SearchParams
@@ -206,24 +197,10 @@ func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) 
 		return fmt.Errorf("search base directory cannot be empty for this implementation")
 	}
 
-	// TODO: 无需后端解析参数
-	if params, err = service.ParseParams(searchParams.Query, searchParams.CurrentPath); err != nil {
+	if params, err = service.ParseParams(searchParams); err != nil {
 		return err
 	}
-
-	// 处理额外的搜索参数
-	if searchParams.ModifiedAfter != "" {
-		// 解析时间字符串
-		if modifiedAfter, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedAfter); err == nil {
-			params.ModifiedAfter = &modifiedAfter
-		}
-	}
-	if searchParams.ModifiedBefore != "" {
-		// 解析时间字符串
-		if modifiedBefore, err := time.Parse(utils.TimeLayOut, searchParams.ModifiedBefore); err == nil {
-			params.ModifiedBefore = &modifiedBefore
-		}
-	}
+	fmt.Println("参数：", params)
 
 	if stream, err = service.SearchItemsInStream(params); err != nil {
 		return err
@@ -241,7 +218,7 @@ func (d *DirController) SearchItemFromInputInStream(searchParams *SearchParams) 
 	return nil
 }
 
-func (d *DirController) SearchItemFromLLM(searchParams *SearchParams) (*SearchResponse, error) {
+func (d *DirController) SearchItemFromLLM(searchParams *dto.SearchParams) (*SearchResponse, error) {
 	var (
 		params *service.SearchParams
 		items  []*service.FileSystemEntry
@@ -263,7 +240,7 @@ func (d *DirController) SearchItemFromLLM(searchParams *SearchParams) (*SearchRe
 	return &SearchResponse{Items: items, DurationNs: time.Since(start)}, nil
 }
 
-func (d *DirController) SearchItemFromLLMInStream(searchParams *SearchParams) error {
+func (d *DirController) SearchItemFromLLMInStream(searchParams *dto.SearchParams) error {
 	var (
 		stream <-chan *service.FileSystemEntry
 		params *service.SearchParams

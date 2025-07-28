@@ -114,17 +114,9 @@ func (t *SearchTask) Run(results chan *FileSystemEntry) {
 		fileModTime := entryInfo.ModTime().Unix()
 		entryName := entryInfo.Name()
 
-		// 首先进行通配符匹配
-		if t.params.GlobPattern != "" {
-			matched, err := filepath.Match(t.params.GlobPattern, entryName)
-			if err != nil || !matched {
-				continue
-			}
-		}
-
 		// 对文件名进行匹配（前缀匹配）
-		if t.params.TargetName != "" {
-			if !strings.HasPrefix(entryName, t.params.TargetName) {
+		if t.params.Query != "" {
+			if !strings.HasPrefix(entryName, t.params.Query) {
 				continue
 			}
 		}
