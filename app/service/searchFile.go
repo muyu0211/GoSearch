@@ -77,51 +77,6 @@ func ParseParams(param *dto.SearchParams) (*SearchParams, error) {
 		}
 	}
 
-	// 定义条件模式
-	//patterns := []struct {
-	//	Name    string
-	//	Pattern *regexp.Regexp
-	//	Handler func(*SearchParams, []string) error
-	//}{
-	//	{
-	//		Name:    "name",
-	//		Pattern: regexp.MustCompile(`name:\s*(\S+)`),
-	//		Handler: handleNameFilter,
-	//	},
-	//	{
-	//		Name:    "type",
-	//		Pattern: regexp.MustCompile(`type:\s*([a-zA-Z0-9._-]+(?:\s*[,\s]\s*[a-zA-Z0-9._-]+)*)`),
-	//		Handler: handleTypeFilter,
-	//	},
-	//	{
-	//		Name:    "size",
-	//		Pattern: regexp.MustCompile(`size:\s*((?:[<>=]+\s*\d+(?:\.\d+)?\s*(?:[BKMGT]?[Bb]?[Yy]?[Tt]?[Ee]?[Ss]?)?\s*)+)`),
-	//		Handler: handleSizeFilter,
-	//	},
-	//	{
-	//		Name:    "glob",
-	//		Pattern: regexp.MustCompile(`glob:\s*(\S+)`),
-	//		Handler: handleGlobFilter,
-	//	},
-	//}
-	//
-	//isPattern := false
-	//for _, p := range patterns {
-	//	matches := p.Pattern.FindAllStringSubmatch(input, -1)
-	//	for _, match := range matches {
-	//		isPattern = true
-	//		if err := p.Handler(searchParams, match); err != nil {
-	//			log.Printf("Parse %s error", p.Name)
-	//			return nil, err
-	//		}
-	//		input = strings.Replace(input, match[0], "", 1)
-	//	}
-	//}
-	//// 如果没有关键字，则认为整个字符串为目标名称
-	//if !isPattern {
-	//	searchParams.TargetName = input
-	//}
-
 	return searchParams, nil
 }
 
