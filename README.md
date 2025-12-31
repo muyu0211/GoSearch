@@ -1,6 +1,6 @@
 # README
 
-> 使用 git@github.com:muyu0211/GoSearch.git 将代码拉至本地
+> 使用 `git clone git@github.com:muyu0211/GoSearch.git` 将代码拉至本地
  
 项目直接提供了安装程序`GoSearch-amd64-installer.exe`，运行后可以直接安装；
 
